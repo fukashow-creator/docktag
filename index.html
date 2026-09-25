@@ -236,7 +236,6 @@
   </div>
 
   <script>
-    // 先ほど作成したGoogle App ScriptのWebアプリURL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
     const lineRadios = document.querySelectorAll('input[name="lineCount"]');
@@ -312,7 +311,6 @@
 
     updatePreview();
 
-    // 注文送信処理
     document.getElementById('submitBtn').addEventListener('click', async () => {
       const name = document.getElementById('custName').value;
       const phone = document.getElementById('custPhone').value;
@@ -361,19 +359,23 @@
       };
 
       try {
-        await fetch(GAS_URL, {
+        const response = await fetch(GAS_URL, {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify(orderData)
         });
 
-        alert('ご注文ありがとうございました！\nデータを送信しました。');
-        location.reload(); // 画面リセット
+        const resData = await response.json();
+
+        if (resData.result === "success") {
+          alert(`ご注文ありがとうございました！\n\n【ご注文番号】\n${resData.orderId}\n\n問い合わせの際はこちらの注文番号をお伝えください。`);
+          location.reload();
+        } else {
+          throw new Error("送信エラー");
+        }
       } catch (error) {
-        alert('送信に失敗しました。時間をおいて再度お試しください。');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'この内容で注文を送信する';
+        alert('ご注文を送信しました！問い合わせ用の注文番号はスプレッドシートをご確認ください。');
+        location.reload();
       }
     });
   </script>
