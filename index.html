@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ドックタグ名入れシミュレーター</title>
+  <!-- Google Fonts（仮の5種類） -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Great+Vibes&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans JP', sans-serif; }
+    body { background-color: #f5f5f7; color: #333; padding: 10px; max-width: 600px; margin: 0 auto; }
+    
+    /* 画面上部に固定表示されるプレビュー領域 */
+    .sticky-preview {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: #f5f5f7;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .preview-wrapper {
+      width: 100%;
+      aspect-ratio: 50 / 28;
+      position: relative;
+    }
+
+    /* 実物プレート（50mm x 28mm 比率） */
+    .preview-container {
+      width: 100%;
+      height: 100%;
+      background-color: #e0e0e0;
+      position: relative;
+      border-radius: 12% / 50%;
+      overflow: hidden;
+      border: 2px solid #a0a0a0;
+    }
+
+    /* 内側2mm 加工可能エリアガイド */
+    .printable-area {
+      position: absolute;
+      left: 4%; right: 4%; top: 7.1%; bottom: 7.1%;
+      border: 1.5px dashed #ff3b30;
+      border-radius: 8% / 40%;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .printable-label {
+      position: absolute;
+      right: 8px; bottom: 4px;
+      font-size: 0.6rem; color: #ff3b30; font-weight: bold;
+      background: rgba(255,255,255,0.85); padding: 1px 4px; border-radius: 3px;
+    }
+
+    /* 3mm穴 */
+    .tag-hole {
+      position: absolute;
+      left: 4%; top: 50%;
+      transform: translateY(-50%);
+      width: 6%; aspect-ratio: 1 / 1;
+      border-radius: 50%; background-color: #f5f5f7;
+      border: 1.5px solid #a0a0a0; z-index: 4;
+    }
+
+    /* 彫刻テキスト（各行絶対配置） */
+    .preview-container .engraved-line {
+      position: absolute;
+      color: #1a1a1a;
+      white-space: nowrap;
+      user-select: none;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      line-height: 1;
+    }
+
+    /* コントロールエリア */
+    .scroll-controls { margin-top: 15px; }
+    .control-panel, .form-panel {
+      background: #fff; padding: 15px; border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 15px;
+    }
+    .panel-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 10px; border-left: 4px solid #333; padding-left: 8px; }
+    
+    .line-block {
+      background: #fafafa; border: 1px solid #e0e0e0; padding: 12px; border-radius: 8px; margin-bottom: 12px;
+    }
+    .line-block-title { font-size: 0.85rem; font-weight: bold; color: #007aff; margin-bottom: 8px; }
+
+    .input-group { margin-bottom: 10px; }
+    .input-group label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 3px; color: #666; }
+    .input-group input[type="text"], .input-group select {
+      width: 100%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem;
+    }
+
+    .line-selector { display: flex; gap: 15px; margin-bottom: 10px; }
+    .line-selector label { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; cursor: pointer; font-weight: bold; }
+    
+    .range-group { display: flex; align-items: center; gap: 8px; }
+    .range-group input[type="range"] { flex: 1; }
+    .range-group span { font-size: 0.75rem; width: 30px; text-align: right; }
+
+    .hidden { display: none !important; }
+
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+    .btn-submit { background-color: #007aff; color: white; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 画面上部に固定されるプレビュー -->
+  <div class="sticky-preview">
+    <div class="preview-wrapper">
+      <div class="preview-container" id="previewArea">
+        <div class="printable-area"><span class="printable-label">加工可能範囲(内側2mm)</span></div>
+        <div class="tag-hole"></div>
+        <div class="engraved-line" id="linePrev1">1行目の文字</div>
+        <div class="engraved-line hidden" id="linePrev2">2行目の文字</div>
+        <div class="engraved-line hidden" id="linePrev3">3行目の文字</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-controls">
+    <!-- デザイン調整パネル -->
+    <div class="control-panel">
+      <div class="panel-title">1. デザイン調整</div>
+      
+      <!-- 行数の選択 -->
+      <div class="input-group">
+        <label>表示する行数</label>
+        <div class="line-selector">
+          <label><input type="radio" name="lineCount" value="1" checked> 1行</label>
+          <label><input type="radio" name="lineCount" value="2"> 2行</label>
+          <label><input type="radio" name="lineCount" value="3"> 3行</label>
+        </div>
+      </div>
+
+      <!-- 1行目の個別設定 -->
+      <div class="line-block" id="blockLine1">
+        <div class="line-block-title">【 1行目の設定 】</div>
+        <div class="input-group">
+          <label>テキスト</label>
+          <input type="text" id="textInput1" value="YOUR TEXT" placeholder="1行目の文字">
+        </div>
+        <div class="input-group">
+          <label>フォント</label>
+          <select id="fontSelect1">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
+            <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
+            <option value="'Cinzel', serif">英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive">英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>文字サイズ (8〜60px)</label>
+          <div class="range-group"><input type="range" id="sizeInput1" min="8" max="60" value="24"><span id="sizeVal1">24</span></div>
+        </div>
+        <div class="input-group">
+          <label>左右位置</label>
+          <div class="range-group"><input type="range" id="posXInput1" min="20" max="80" value="55"><span id="posXVal1">0</span></div>
+        </div>
+        <div class="input-group">
+          <label>上下位置</label>
+          <div class="range-group"><input type="range" id="posYInput1" min="20" max="80" value="50"><span id="posYVal1">0</span></div>
+        </div>
+      </div>
+
+      <!-- 2行目の個別設定 -->
+      <div class="line-block hidden" id="blockLine2">
+        <div class="line-block-title">【 2行目の設定 】</div>
+        <div class="input-group">
+          <label>テキスト</label>
+          <input type="text" id="textInput2" value="SECOND LINE" placeholder="2行目の文字">
+        </div>
+        <div class="input-group">
+          <label>フォント</label>
+          <select id="fontSelect2">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
+            <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
+            <option value="'Cinzel', serif">英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive" selected>英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>文字サイズ (8〜60px)</label>
+          <div class="range-group"><input type="range" id="sizeInput2" min="8" max="60" value="16"><span id="sizeVal2">16</span></div>
+        </div>
+        <div class="input-group">
+          <label>左右位置</label>
+          <div class="range-group"><input type="range" id="posXInput2" min="20" max="80" value="55"><span id="posXVal2">0</span></div>
+        </div>
+        <div class="input-group">
+          <label>上下位置</label>
+          <div class="range-group"><input type="range" id="posYInput2" min="20" max="80" value="65"><span id="posYVal2">0</span></div>
+        </div>
+      </div>
+
+      <!-- 3行目の個別設定 -->
+      <div class="line-block hidden" id="blockLine3">
+        <div class="line-block-title">【 3行目の設定 】</div>
+        <div class="input-group">
+          <label>テキスト</label>
+          <input type="text" id="textInput3" value="THIRD LINE" placeholder="3行目の文字">
+        </div>
+        <div class="input-group">
+          <label>フォント</label>
+          <select id="fontSelect3">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
+            <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
+            <option value="'Cinzel', serif" selected>英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive">英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>文字サイズ (8〜60px)</label>
+          <div class="range-group"><input type="range" id="sizeInput3" min="8" max="60" value="14"><span id="sizeVal3">14</span></div>
+        </div>
+        <div class="input-group">
+          <label>左右位置</label>
+          <div class="range-group"><input type="range" id="posXInput3" min="20" max="80" value="55"><span id="posXVal3">0</span></div>
+        </div>
+        <div class="input-group">
+          <label>上下位置</label>
+          <div class="range-group"><input type="range" id="posYInput3" min="20" max="80" value="80"><span id="posYVal3">0</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- お届け先フォーム -->
+    <div class="form-panel">
+      <div class="panel-title">2. お届け先情報の入力</div>
+      <div class="input-group"><label>お名前 *</label><input type="text" id="custName" required placeholder="山田 太郎"></div>
+      <div class="input-group"><label>電話番号 *</label><input type="text" id="custPhone" required placeholder="090-0000-0000"></div>
+      <div class="input-group"><label>郵便番号 *</label><input type="text" id="custZip" required placeholder="123-4567"></div>
+      <div class="input-group"><label>お届け先住所 *</label><input type="text" id="custAddress" required placeholder="東京都..."></div>
+      <button class="btn btn-submit" id="submitBtn">この内容で注文を送信する</button>
+    </div>
+  </div>
+
+  <script>
+    const lineRadios = document.querySelectorAll('input[name="lineCount"]');
+
+    // 1〜3行ごとの要素設定まとめ
+    const lines = [
+      {
+        block: document.getElementById('blockLine1'),
+        input: document.getElementById('textInput1'),
+        font: document.getElementById('fontSelect1'),
+        size: document.getElementById('sizeInput1'),
+        sizeVal: document.getElementById('sizeVal1'),
+        posX: document.getElementById('posXInput1'),
+        posXVal: document.getElementById('posXVal1'),
+        posY: document.getElementById('posYInput1'),
+        posYVal: document.getElementById('posYVal1'),
+        prev: document.getElementById('linePrev1')
+      },
+      {
+        block: document.getElementById('blockLine2'),
+        input: document.getElementById('textInput2'),
+        font: document.getElementById('fontSelect2'),
+        size: document.getElementById('sizeInput2'),
+        sizeVal: document.getElementById('sizeVal2'),
+        posX: document.getElementById('posXInput2'),
+        posXVal: document.getElementById('posXVal2'),
+        posY: document.getElementById('posYInput2'),
+        posYVal: document.getElementById('posYVal2'),
+        prev: document.getElementById('linePrev2')
+      },
+      {
+        block: document.getElementById('blockLine3'),
+        input: document.getElementById('textInput3'),
+        font: document.getElementById('fontSelect3'),
+        size: document.getElementById('sizeInput3'),
+        sizeVal: document.getElementById('sizeVal3'),
+        posX: document.getElementById('posXInput3'),
+        posXVal: document.getElementById('posXVal3'),
+        posY: document.getElementById('posYInput3'),
+        posYVal: document.getElementById('posYVal3'),
+        prev: document.getElementById('linePrev3')
+      }
+    ];
+
+    function updatePreview() {
+      let count = 1;
+      lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
+
+      // 初期配置の自動計算（2行・3行時に重ならない初期値）
+      if (count === 2) {
+        if (lines[0].posY.value === '50') lines[0].posY.value = '35';
+        if (lines[1].posY.value === '65') lines[1].posY.value = '65';
+      } else if (count === 3) {
+        if (lines[0].posY.value === '35') lines[0].posY.value = '25';
+        if (lines[1].posY.value === '65') lines[1].posY.value = '50';
+      }
+
+      // 各行の反映・制御
+      lines.forEach((line, index) => {
+        if (index < count) {
+          line.block.classList.remove('hidden');
+          line.prev.classList.remove('hidden');
+          
+          line.prev.textContent = line.input.value || ' ';
+          line.prev.style.fontFamily = line.font.value;
+          line.prev.style.fontSize = line.size.value + 'px';
+          line.prev.style.left = line.posX.value + '%';
+          line.prev.style.top = line.posY.value + '%';
+
+          line.sizeVal.textContent = line.size.value;
+          line.posXVal.textContent = line.posX.value - 55;
+          line.posYVal.textContent = line.posY.value - 50;
+        } else {
+          line.block.classList.add('hidden');
+          line.prev.classList.add('hidden');
+        }
+      });
+    }
+
+    // イベント設定
+    lineRadios.forEach(r => r.addEventListener('change', updatePreview));
+    lines.forEach(line => {
+      [line.input, line.font, line.size, line.posX, line.posY].forEach(el => el.addEventListener('input', updatePreview));
+    });
+
+    updatePreview();
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const name = document.getElementById('custName').value;
+      if (!name) { alert('お名前を入力してください'); return; }
+
+      let count = 1;
+      lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
+
+      let msg = `【注文データ】\nお名前: ${name}\n設定行数: ${count}行\n`;
+      for(let i=0; i<count; i++) {
+        msg += `\n[${i+1}行目]\n文字: ${lines[i].input.value}\nサイズ: ${lines[i].size.value}px / 左右: ${lines[i].posX.value}% / 上下: ${lines[i].posY.value}%`;
+      }
+
+      alert(`${msg}\n\n上記データが保持されました！`);
+    });
+  </script>
+</body>
+</html>
