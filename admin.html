@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ドックタグ注文デザイン再現・出力ツール</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Great+Vibes&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans JP', sans-serif; }
+    body { background-color: #f0f2f5; color: #333; padding: 20px; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin-bottom: 20px; color: #1a1a1a; text-align: center; }
+
+    .container { display: flex; flex-wrap: wrap; gap: 20px; }
+    .input-card, .preview-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); flex: 1; min-width: 300px; }
+
+    .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; border-left: 4px solid #007aff; padding-left: 10px; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
+
+    .line-box { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    .line-box-title { font-size: 0.85rem; font-weight: bold; color: #007aff; margin-bottom: 8px; }
+
+    /* プレビュー表示エリア */
+    .preview-wrapper { width: 100%; aspect-ratio: 50 / 28; position: relative; margin-bottom: 15px; }
+    .preview-container {
+      width: 100%; height: 100%; background-color: #e0e0e0; position: relative;
+      border-radius: 12% / 50%; overflow: hidden; border: 2px solid #a0a0a0;
+    }
+    .printable-area {
+      position: absolute; left: 4%; right: 4%; top: 7.1%; bottom: 7.1%;
+      border: 1.5px dashed #ff3b30; border-radius: 8% / 40%; pointer-events: none; z-index: 3;
+    }
+    .tag-hole {
+      position: absolute; left: 4%; top: 50%; transform: translateY(-50%);
+      width: 6%; aspect-ratio: 1 / 1; border-radius: 50%; background-color: #f0f2f5;
+      border: 1.5px solid #a0a0a0; z-index: 4;
+    }
+    .engraved-line {
+      position: absolute; color: #1a1a1a; white-space: nowrap; user-select: none;
+      pointer-events: none; transform: translate(-50%, -50%); z-index: 2; line-height: 1;
+    }
+
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+    .btn-download { background-color: #28a745; color: white; margin-top: 10px; }
+    .btn-download:hover { background-color: #218838; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <h1>ドックタグ注文デザイン再現・画像出力ツール</h1>
+
+  <div class="container">
+    <!-- パラメータ入力パネル -->
+    <div class="input-card">
+      <div class="card-title">スプレッドシートデータの入力</div>
+      
+      <div class="form-group">
+        <label>注文番号</label>
+        <input type="text" id="admOrderId" placeholder="例: DT-20260928-1234">
+      </div>
+
+      <div class="form-group">
+        <label>表示行数</label>
+        <select id="admLineCount">
+          <option value="1">1行</option>
+          <option value="2">2行</option>
+          <option value="3">3行</option>
+        </select>
+      </div>
+
+      <!-- 1行目 -->
+      <div class="line-box">
+        <div class="line-box-title">1行目</div>
+        <div class="form-group"><label>テキスト</label><input type="text" id="admText1" value="YOUR TEXT"></div>
+        <div class="form-group">
+          <label>フォント</label>
+          <select id="admFont1">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体</option>
+            <option value="'Noto Serif JP', serif">明朝体</option>
+            <option value="'Cinzel', serif">英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive">英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="form-group"><label>サイズ(px)</label><input type="number" id="admSize1" value="24"></div>
+        <div class="form-group"><label>左右位置(%)</label><input type="number" id="admPosX1" value="55"></div>
+        <div class="form-group"><label>上下位置(%)</label><input type="number" id="admPosY1" value="50"></div>
+      </div>
+
+      <!-- 2行目 -->
+      <div class="line-box hidden" id="admBox2">
+        <div class="line-box-title">2行目</div>
+        <div class="form-group"><label>テキスト</label><input type="text" id="admText2" value="SECOND LINE"></div>
+        <div class="form-group">
+          <label>フォント</label>
+          <select id="admFont2">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体</option>
+            <option value="'Noto Serif JP', serif">明朝体</option>
+            <option value="'Cinzel', serif">英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive" selected>英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="form-group"><label>サイズ(px)</label><input type="number" id="admSize2" value="16"></div>
+        <div class="form-group"><label>左右位置(%)</label><input type="number" id="admPosX2" value="55"></div>
+        <div class="form-group"><label>上下位置(%)</label><input type="number" id="admPosY2" value="65"></div>
+      </div>
+
+      <!-- 3行目 -->
+      <div class="line-box hidden" id="admBox3">
+        <div class="line-box-title">3行目</div>
+        <div class="form-group"><label>テキスト</label><input type="text" id="admText3" value="THIRD LINE"></div>
+        <div class="form-group">
+          <label>フォント</label>
+          <select id="admFont3">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体</option>
+            <option value="'Noto Serif JP', serif">明朝体</option>
+            <option value="'Cinzel', serif" selected>英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive">英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="form-group"><label>サイズ(px)</label><input type="number" id="admSize3" value="14"></div>
+        <div class="form-group"><label>左右位置(%)</label><input type="number" id="admPosX3" value="55"></div>
+        <div class="form-group"><label>上下位置(%)</label><input type="number" id="admPosY3" value="80"></div>
+      </div>
+
+    </div>
+
+    <!-- プレビュー＆出力パネル -->
+    <div class="preview-card">
+      <div class="card-title">再現プレビュー</div>
+      
+      <div class="preview-wrapper">
+        <div class="preview-container" id="captureArea">
+          <div class="printable-area"></div>
+          <div class="tag-hole"></div>
+          <div class="engraved-line" id="prevLine1">1行目の文字</div>
+          <div class="engraved-line hidden" id="prevLine2">2行目の文字</div>
+          <div class="engraved-line hidden" id="prevLine3">3行目の文字</div>
+        </div>
+      </div>
+
+      <button class="btn btn-download" id="downloadBtn">画像（PNG）として保存する</button>
+    </div>
+  </div>
+
+  <script>
+    const lineCountSelect = document.getElementById('admLineCount');
+    const boxes = [null, null, document.getElementById('admBox2'), document.getElementById('admBox3')];
+
+    const lines = [
+      {
+        text: document.getElementById('admText1'), font: document.getElementById('admFont1'),
+        size: document.getElementById('admSize1'), posX: document.getElementById('admPosX1'), posY: document.getElementById('admPosY1'),
+        prev: document.getElementById('prevLine1')
+      },
+      {
+        text: document.getElementById('admText2'), font: document.getElementById('admFont2'),
+        size: document.getElementById('admSize2'), posX: document.getElementById('admPosX2'), posY: document.getElementById('admPosY2'),
+        prev: document.getElementById('prevLine2')
+      },
+      {
+        text: document.getElementById('admText3'), font: document.getElementById('admFont3'),
+        size: document.getElementById('admSize3'), posX: document.getElementById('admPosX3'), posY: document.getElementById('admPosY3'),
+        prev: document.getElementById('prevLine3')
+      }
+    ];
+
+    function updateAdminPreview() {
+      const count = parseInt(lineCountSelect.value);
+
+      if (count >= 2) boxes[2].classList.remove('hidden'); else boxes[2].classList.add('hidden');
+      if (count >= 3) boxes[3].classList.remove('hidden'); else boxes[3].classList.add('hidden');
+
+      lines.forEach((line, idx) => {
+        if (idx < count) {
+          line.prev.classList.remove('hidden');
+          line.prev.textContent = line.text.value || '';
+          line.prev.style.fontFamily = line.font.value;
+          line.prev.style.fontSize = line.size.value + 'px';
+          line.prev.style.left = line.posX.value + '%';
+          line.prev.style.top = line.posY.value + '%';
+        } else {
+          line.prev.classList.add('hidden');
+        }
+      });
+    }
+
+    lineCountSelect.addEventListener('change', updateAdminPreview);
+    lines.forEach(line => {
+      [line.text, line.font, line.size, line.posX, line.posY].forEach(el => el.addEventListener('input', updateAdminPreview));
+    });
+
+    updateAdminPreview();
+
+    // 画像保存処理
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const orderId = document.getElementById('admOrderId').value || 'docktag_design';
+      const captureArea = document.getElementById('captureArea');
+
+      html2canvas(captureArea, { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `${orderId}.png`;
+        link.click();
+      });
+    });
+  </script>
+</body>
+</html>
