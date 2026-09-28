@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ドックタグ名入れシミュレーター</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Great+Vibes&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans JP', sans-serif; }
     body { background-color: #f5f5f7; color: #333; padding: 10px; max-width: 600px; margin: 0 auto; }
@@ -100,6 +101,24 @@
     .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; }
     .btn-submit { background-color: #007aff; color: white; margin-top: 10px; }
     .btn-submit:disabled { background-color: #ccc; cursor: not-allowed; }
+
+    /* モーダル（確認ダイアログ）スタイル */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 1000;
+      display: flex; justify-content: center; align-items: center; padding: 15px;
+    }
+    .modal-content {
+      background: #fff; border-radius: 12px; padding: 20px; max-width: 500px; width: 100%;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .modal-title { font-size: 1.1rem; font-weight: bold; text-align: center; margin-bottom: 15px; }
+    .modal-img-wrapper { width: 100%; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .modal-img-wrapper img { width: 100%; display: block; }
+    .modal-info { font-size: 0.85rem; background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 15px; line-height: 1.5; }
+    .modal-btns { display: flex; gap: 10px; }
+    .btn-cancel { background-color: #8e8e93; color: white; }
+    .btn-confirm { background-color: #28a745; color: white; }
   </style>
 </head>
 <body>
@@ -147,8 +166,8 @@
           </select>
         </div>
         <div class="input-group">
-          <label>文字サイズ (8〜60px)</label>
-          <div class="range-group"><input type="range" id="sizeInput1" min="8" max="60" value="24"><span id="sizeVal1">24</span></div>
+          <label>文字サイズ (30〜100px)</label>
+          <div class="range-group"><input type="range" id="sizeInput1" min="30" max="100" value="40"><span id="sizeVal1">40</span></div>
         </div>
         <div class="input-group">
           <label>左右位置</label>
@@ -178,8 +197,8 @@
           </select>
         </div>
         <div class="input-group">
-          <label>文字サイズ (8〜60px)</label>
-          <div class="range-group"><input type="range" id="sizeInput2" min="8" max="60" value="16"><span id="sizeVal2">16</span></div>
+          <label>文字サイズ (30〜100px)</label>
+          <div class="range-group"><input type="range" id="sizeInput2" min="30" max="100" value="35"><span id="sizeVal2">35</span></div>
         </div>
         <div class="input-group">
           <label>左右位置</label>
@@ -209,8 +228,8 @@
           </select>
         </div>
         <div class="input-group">
-          <label>文字サイズ (8〜60px)</label>
-          <div class="range-group"><input type="range" id="sizeInput3" min="8" max="60" value="14"><span id="sizeVal3">14</span></div>
+          <label>文字サイズ (30〜100px)</label>
+          <div class="range-group"><input type="range" id="sizeInput3" min="30" max="100" value="30"><span id="sizeVal3">30</span></div>
         </div>
         <div class="input-group">
           <label>左右位置</label>
@@ -231,7 +250,26 @@
       <div class="input-group"><label>電話番号 *</label><input type="text" id="custPhone" required placeholder="090-0000-0000"></div>
       <div class="input-group"><label>郵便番号 *</label><input type="text" id="custZip" required placeholder="123-4567"></div>
       <div class="input-group"><label>お届け先住所 *</label><input type="text" id="custAddress" required placeholder="東京都..."></div>
-      <button class="btn btn-submit" id="submitBtn">この内容で注文を送信する</button>
+      <button class="btn btn-submit" id="openConfirmBtn">デザイン・注文内容を確認する</button>
+    </div>
+  </div>
+
+  <!-- 送信確認モーダル -->
+  <div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-title">ご注文内容の確認</div>
+      <p style="font-size:0.8rem; color:#666; text-align:center; margin-bottom:10px;">以下の内容・完成デザインで注文を確定しますか？</p>
+      
+      <div class="modal-img-wrapper">
+        <img id="modalPreviewImg" src="" alt="完成プレビュー">
+      </div>
+
+      <div class="modal-info" id="modalInfoText"></div>
+
+      <div class="modal-btns">
+        <button class="btn btn-cancel" id="closeModalBtn">修正する</button>
+        <button class="btn btn-confirm" id="finalSubmitBtn">この内容で注文確定</button>
+      </div>
     </div>
   </div>
 
@@ -311,7 +349,10 @@
 
     updatePreview();
 
-    document.getElementById('submitBtn').addEventListener('click', async () => {
+    let capturedImageData = "";
+
+    // 確認モーダルを開く
+    document.getElementById('openConfirmBtn').addEventListener('click', async () => {
       const name = document.getElementById('custName').value;
       const phone = document.getElementById('custPhone').value;
       const zip = document.getElementById('custZip').value;
@@ -322,18 +363,41 @@
         return;
       }
 
+      // プレビューをキャプチャして画像化
+      const previewArea = document.getElementById('previewArea');
+      const canvas = await html2canvas(previewArea, { scale: 2 });
+      capturedImageData = canvas.toDataURL('image/png');
+
+      document.getElementById('modalPreviewImg').src = capturedImageData;
+      document.getElementById('modalInfoText').innerHTML = `
+        <strong>お名前:</strong> ${name}<br>
+        <strong>電話番号:</strong> ${phone}<br>
+        <strong>ご住所:</strong> 〒${zip} ${address}
+      `;
+
+      document.getElementById('confirmModal').classList.remove('hidden');
+    });
+
+    // モーダルを閉じる
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.add('hidden');
+    });
+
+    // 注文確定送信
+    document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
+      const finalBtn = document.getElementById('finalSubmitBtn');
+      finalBtn.disabled = true;
+      finalBtn.textContent = '送信中...';
+
       let count = 1;
       lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
 
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = '送信中...';
-
       const orderData = {
-        name: name,
-        phone: phone,
-        zip: zip,
-        address: address,
+        name: document.getElementById('custName').value,
+        phone: document.getElementById('custPhone').value,
+        zip: document.getElementById('custZip').value,
+        address: document.getElementById('custAddress').value,
+        imageData: capturedImageData,
         lineCount: count,
         line1: {
           text: lines[0].input.value,
@@ -374,7 +438,7 @@
           throw new Error("送信エラー");
         }
       } catch (error) {
-        alert('ご注文を送信しました！問い合わせ用の注文番号はスプレッドシートをご確認ください。');
+        alert('ご注文を送信しました！スプレッドシートをご確認ください。');
         location.reload();
       }
     });
