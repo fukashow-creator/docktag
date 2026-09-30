@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.4 - 2026/09/30】郵便番号からの住所自動入力(Zipcloud API)機能追加 -->
+<!-- 【バージョン: v1.5 - 2026/09/30】両面（表面・裏面）デザイン＆画像2枚生成対応 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -19,6 +19,18 @@
       padding-top: 10px;
       padding-bottom: 10px;
       border-bottom: 1px solid #ddd;
+    }
+
+    /* 表面/裏面 切替タブ */
+    .side-tabs {
+      display: flex; gap: 8px; margin-bottom: 8px;
+    }
+    .side-tab-btn {
+      flex: 1; padding: 8px; font-size: 0.85rem; font-weight: bold; border: 1px solid #007aff;
+      background: #fff; color: #007aff; border-radius: 6px; cursor: pointer; text-align: center;
+    }
+    .side-tab-btn.active {
+      background: #007aff; color: #fff;
     }
 
     .preview-wrapper {
@@ -98,7 +110,6 @@
     .range-group span { font-size: 0.75rem; width: 30px; text-align: right; }
 
     .zip-hint { font-size: 0.7rem; color: #007aff; margin-top: 2px; }
-
     .hidden { display: none !important; }
 
     .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; }
@@ -116,8 +127,10 @@
       max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     .modal-title { font-size: 1.1rem; font-weight: bold; text-align: center; margin-bottom: 15px; }
-    .modal-img-wrapper { width: 100%; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .modal-img-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+    .modal-img-wrapper { width: 100%; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; position: relative; }
     .modal-img-wrapper img { width: 100%; display: block; }
+    .modal-img-tag { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 3px; }
     .modal-info { font-size: 0.85rem; background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 15px; line-height: 1.5; }
     .modal-btns { display: flex; gap: 10px; }
     .btn-cancel { background-color: #8e8e93; color: white; }
@@ -127,6 +140,12 @@
 <body>
 
   <div class="sticky-preview">
+    <!-- 表面・裏面 切り替えタブ -->
+    <div class="side-tabs hidden" id="sideTabContainer">
+      <div class="side-tab-btn active" id="tabFrontBtn">表面を編集</div>
+      <div class="side-tab-btn" id="tabBackBtn">裏面を編集</div>
+    </div>
+
     <div class="preview-wrapper">
       <div class="preview-container" id="previewArea">
         <div class="printable-area"><span class="printable-label">加工可能範囲(内側2mm)</span></div>
@@ -142,6 +161,15 @@
     <div class="control-panel">
       <div class="panel-title">1. デザイン調整</div>
       
+      <!-- 片面 / 両面 選択 -->
+      <div class="input-group">
+        <label>刻印面数</label>
+        <div class="line-selector">
+          <label><input type="radio" name="sideMode" value="single" checked> 片面のみ</label>
+          <label><input type="radio" name="sideMode" value="double"> 両面（表面・裏面）</label>
+        </div>
+      </div>
+
       <div class="input-group">
         <label>表示する行数</label>
         <div class="line-selector">
@@ -267,8 +295,8 @@
       <div class="modal-title">ご注文内容の確認</div>
       <p style="font-size:0.8rem; color:#666; text-align:center; margin-bottom:10px;">以下の内容・完成デザインで注文を確定しますか？</p>
       
-      <div class="modal-img-wrapper">
-        <img id="modalPreviewImg" src="" alt="完成プレビュー">
+      <div class="modal-img-grid" id="modalImgGrid">
+        <!-- JSで動的に画像を追加 -->
       </div>
 
       <div class="modal-info" id="modalInfoText"></div>
@@ -283,7 +311,34 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
+    let currentSide = "front"; // "front" or "back"
+    let isDoubleSided = false;
+
+    // 表面・裏面のデータを保持するオブジェクト
+    const sideData = {
+      front: {
+        lineCount: 1,
+        lines: [
+          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", size: 40, posX: 55, posY: 50 },
+          { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, posX: 55, posY: 65 },
+          { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, posX: 55, posY: 80 }
+        ]
+      },
+      back: {
+        lineCount: 1,
+        lines: [
+          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", size: 40, posX: 55, posY: 50 },
+          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, posX: 55, posY: 65 },
+          { text: "3RD LINE", font: "'Cinzel', serif", size: 30, posX: 55, posY: 80 }
+        ]
+      }
+    };
+
     const lineRadios = document.querySelectorAll('input[name="lineCount"]');
+    const sideRadios = document.querySelectorAll('input[name="sideMode"]');
+    const sideTabContainer = document.getElementById('sideTabContainer');
+    const tabFrontBtn = document.getElementById('tabFrontBtn');
+    const tabBackBtn = document.getElementById('tabBackBtn');
 
     const lines = [
       {
@@ -324,9 +379,46 @@
       }
     ];
 
-    function updatePreview() {
+    // 画面の入力をデータ構造に同期
+    function saveCurrentControlsToData() {
       let count = 1;
       lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
+      sideData[currentSide].lineCount = count;
+
+      lines.forEach((line, index) => {
+        sideData[currentSide].lines[index] = {
+          text: line.input.value,
+          font: line.font.value,
+          size: parseInt(line.size.value),
+          posX: parseInt(line.posX.value),
+          posY: parseInt(line.posY.value)
+        };
+      });
+    }
+
+    // データをコントロール画面に適用
+    function loadDataToControls() {
+      const data = sideData[currentSide];
+      
+      lineRadios.forEach(r => {
+        r.checked = (parseInt(r.value) === data.lineCount);
+      });
+
+      lines.forEach((line, index) => {
+        const item = data.lines[index];
+        line.input.value = item.text;
+        line.font.value = item.font;
+        line.size.value = item.size;
+        line.posX.value = item.posX;
+        line.posY.value = item.posY;
+      });
+
+      updatePreviewUI();
+    }
+
+    function updatePreviewUI() {
+      const data = sideData[currentSide];
+      const count = data.lineCount;
 
       lines.forEach((line, index) => {
         if (index < count) {
@@ -349,12 +441,51 @@
       });
     }
 
-    lineRadios.forEach(r => r.addEventListener('change', updatePreview));
-    lines.forEach(line => {
-      [line.input, line.font, line.size, line.posX, line.posY].forEach(el => el.addEventListener('input', updatePreview));
+    // 片面 / 両面 切り替え
+    sideRadios.forEach(r => {
+      r.addEventListener('change', (e) => {
+        isDoubleSided = (e.target.value === 'double');
+        if (isDoubleSided) {
+          sideTabContainer.classList.remove('hidden');
+        } else {
+          sideTabContainer.classList.add('hidden');
+          switchSide('front'); // 片面時は自動で表面へ
+        }
+      });
     });
 
-    updatePreview();
+    // タブ切り替え処理
+    function switchSide(targetSide) {
+      if (currentSide === targetSide) return;
+      saveCurrentControlsToData();
+      currentSide = targetSide;
+
+      if (currentSide === 'front') {
+        tabFrontBtn.classList.add('active');
+        tabBackBtn.classList.remove('active');
+      } else {
+        tabBackBtn.classList.add('active');
+        tabFrontBtn.classList.remove('active');
+      }
+
+      loadDataToControls();
+    }
+
+    tabFrontBtn.addEventListener('click', () => switchSide('front'));
+    tabBackBtn.addEventListener('click', () => switchSide('back'));
+
+    // 入力イベント検知
+    lineRadios.forEach(r => r.addEventListener('change', () => {
+      saveCurrentControlsToData();
+      updatePreviewUI();
+    }));
+
+    lines.forEach(line => {
+      [line.input, line.font, line.size, line.posX, line.posY].forEach(el => el.addEventListener('input', () => {
+        saveCurrentControlsToData();
+        updatePreviewUI();
+      }));
+    });
 
     // 郵便番号からの住所自動入力機能 (Zipcloud API)
     const zipInput = document.getElementById('custZip');
@@ -362,7 +493,7 @@
     const zipStatus = document.getElementById('zipStatus');
 
     zipInput.addEventListener('input', async (e) => {
-      const zip = e.target.value.replace(/[^\d]/g, ''); // 数字以外を除去
+      const zip = e.target.value.replace(/[^\d]/g, '');
       if (zip.length === 7) {
         zipStatus.textContent = '住所を検索中...';
         try {
@@ -370,10 +501,9 @@
           const data = await response.json();
           if (data.results) {
             const res = data.results[0];
-            const fullAddress = `${res.address1}${res.address2}${res.address3}`;
-            addressInput.value = fullAddress;
+            addressInput.value = `${res.address1}${res.address2}${res.address3}`;
             zipStatus.textContent = '✓ 住所を自動入力しました。以降の番地を入力してください。';
-            addressInput.focus(); // 住所入力欄へフォーカス移動
+            addressInput.focus();
           } else {
             zipStatus.textContent = '※該当する住所が見つかりませんでした。';
           }
@@ -385,7 +515,38 @@
       }
     });
 
-    let capturedImageData = "";
+    // キャプチャ画像作成用関数
+    async function generateCanvasImageForSide(sideName) {
+      saveCurrentControlsToData();
+      const tempSide = currentSide;
+      
+      // 対象面に一時的に切り替えて描画
+      currentSide = sideName;
+      loadDataToControls();
+      await document.fonts.ready;
+
+      const previewArea = document.getElementById('previewArea');
+      const canvas = await html2canvas(previewArea, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: previewArea.offsetWidth,
+        height: previewArea.offsetHeight,
+        onclone: (clonedDoc) => {
+          const clonedPreview = clonedDoc.getElementById('previewArea');
+          if (clonedPreview) clonedPreview.style.transform = 'none';
+        }
+      });
+
+      // 元の面に復元
+      currentSide = tempSide;
+      loadDataToControls();
+
+      return canvas.toDataURL('image/png');
+    }
+
+    let capturedFrontImage = "";
+    let capturedBackImage = "";
 
     // 確認モーダルを開く
     document.getElementById('openConfirmBtn').addEventListener('click', async () => {
@@ -399,30 +560,34 @@
         return;
       }
 
-      // プレビューをキャプチャして画像化 (iOSの文字拡大・レンダリングズレ補正対応)
-      const previewArea = document.getElementById('previewArea');
-      
-      // フォントの読み込み完了を確実にする
-      await document.fonts.ready;
+      // 画像の自動キャプチャ
+      capturedFrontImage = await generateCanvasImageForSide('front');
+      if (isDoubleSided) {
+        capturedBackImage = await generateCanvasImageForSide('back');
+      } else {
+        capturedBackImage = "";
+      }
 
-      const canvas = await html2canvas(previewArea, {
-        scale: 2, // 高解像度生成
-        useCORS: true,
-        logging: false,
-        width: previewArea.offsetWidth,
-        height: previewArea.offsetHeight,
-        onclone: (clonedDoc) => {
-          const clonedPreview = clonedDoc.getElementById('previewArea');
-          if (clonedPreview) {
-            clonedPreview.style.transform = 'none';
-          }
-        }
-      });
+      // モーダル内の画像表示を構成
+      const imgGrid = document.getElementById('modalImgGrid');
+      imgGrid.innerHTML = `
+        <div class="modal-img-wrapper">
+          <span class="modal-img-tag">${isDoubleSided ? '表面' : '完成デザイン'}</span>
+          <img src="${capturedFrontImage}" alt="表面デザイン">
+        </div>
+      `;
 
-      capturedImageData = canvas.toDataURL('image/png');
+      if (isDoubleSided && capturedBackImage) {
+        imgGrid.innerHTML += `
+          <div class="modal-img-wrapper">
+            <span class="modal-img-tag">裏面</span>
+            <img src="${capturedBackImage}" alt="裏面デザイン">
+          </div>
+        `;
+      }
 
-      document.getElementById('modalPreviewImg').src = capturedImageData;
       document.getElementById('modalInfoText').innerHTML = `
+        <strong>刻印種類:</strong> ${isDoubleSided ? '両面刻印' : '片面刻印'}<br>
         <strong>お名前:</strong> ${name}<br>
         <strong>電話番号:</strong> ${phone}<br>
         <strong>ご住所:</strong> 〒${zip} ${address}
@@ -442,37 +607,18 @@
       finalBtn.disabled = true;
       finalBtn.textContent = '送信中...';
 
-      let count = 1;
-      lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
+      saveCurrentControlsToData();
 
       const orderData = {
         name: document.getElementById('custName').value,
         phone: document.getElementById('custPhone').value,
         zip: document.getElementById('custZip').value,
         address: document.getElementById('custAddress').value,
-        imageData: capturedImageData,
-        lineCount: count,
-        line1: {
-          text: lines[0].input.value,
-          font: lines[0].font.value,
-          size: lines[0].size.value,
-          posX: lines[0].posX.value,
-          posY: lines[0].posY.value
-        },
-        line2: {
-          text: count >= 2 ? lines[1].input.value : '',
-          font: count >= 2 ? lines[1].font.value : '',
-          size: count >= 2 ? lines[1].size.value : '',
-          posX: count >= 2 ? lines[1].posX.value : '',
-          posY: count >= 2 ? lines[1].posY.value : ''
-        },
-        line3: {
-          text: count >= 3 ? lines[2].input.value : '',
-          font: count >= 3 ? lines[2].font.value : '',
-          size: count >= 3 ? lines[2].size.value : '',
-          posX: count >= 3 ? lines[2].posX.value : '',
-          posY: count >= 3 ? lines[2].posY.value : ''
-        }
+        isDoubleSided: isDoubleSided,
+        imageDataFront: capturedFrontImage,
+        imageDataBack: capturedBackImage,
+        frontData: sideData.front,
+        backData: isDoubleSided ? sideData.back : null
       };
 
       try {
@@ -495,6 +641,9 @@
         location.reload();
       }
     });
+
+    // 初期化
+    loadDataToControls();
   </script>
 </body>
 </html>
