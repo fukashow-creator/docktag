@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.2 - 2026/09/28】画像自動生成＆最終確認ポップアップ＆フォントサイズ(30-100px)対応 -->
+<!-- 【バージョン: v1.3 - 2026/09/30】iPhone(iOS)でのhtml2canvas文字サイズズレ・高解像度キャプチャ補正対応 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -364,9 +364,27 @@
         return;
       }
 
-      // プレビューをキャプチャして画像化
+      // プレビューをキャプチャして画像化 (iOSの文字拡大・レンダリングズレ補正対応)
       const previewArea = document.getElementById('previewArea');
-      const canvas = await html2canvas(previewArea, { scale: 2 });
+      
+      // フォントの読み込み完了を確実にする
+      await document.fonts.ready;
+
+      const canvas = await html2canvas(previewArea, {
+        scale: 2, // 高解像度生成
+        useCORS: true,
+        logging: false,
+        width: previewArea.offsetWidth,
+        height: previewArea.offsetHeight,
+        onclone: (clonedDoc) => {
+          // キャプチャ用に複製されたDOM上の文字の倍率ズレを固定補正
+          const clonedPreview = clonedDoc.getElementById('previewArea');
+          if (clonedPreview) {
+            clonedPreview.style.transform = 'none';
+          }
+        }
+      });
+
       capturedImageData = canvas.toDataURL('image/png');
 
       document.getElementById('modalPreviewImg').src = capturedImageData;
