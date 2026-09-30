@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.5 - 2026/09/30】両面（表面・裏面）デザイン＆画像2枚生成対応 -->
+<!-- 【バージョン: v1.5.1 - 2026/09/30】両面切替タブの位置をプレビュー直下へ移動 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -19,18 +19,6 @@
       padding-top: 10px;
       padding-bottom: 10px;
       border-bottom: 1px solid #ddd;
-    }
-
-    /* 表面/裏面 切替タブ */
-    .side-tabs {
-      display: flex; gap: 8px; margin-bottom: 8px;
-    }
-    .side-tab-btn {
-      flex: 1; padding: 8px; font-size: 0.85rem; font-weight: bold; border: 1px solid #007aff;
-      background: #fff; color: #007aff; border-radius: 6px; cursor: pointer; text-align: center;
-    }
-    .side-tab-btn.active {
-      background: #007aff; color: #fff;
     }
 
     .preview-wrapper {
@@ -84,7 +72,20 @@
       line-height: 1;
     }
 
-    .scroll-controls { margin-top: 15px; }
+    /* 表面/裏面 切替タブ (画像直下用) */
+    .side-tabs {
+      display: flex; gap: 8px; margin-top: 12px; margin-bottom: 5px;
+    }
+    .side-tab-btn {
+      flex: 1; padding: 10px; font-size: 0.9rem; font-weight: bold; border: 2px solid #007aff;
+      background: #fff; color: #007aff; border-radius: 8px; cursor: pointer; text-align: center;
+      transition: all 0.2s ease;
+    }
+    .side-tab-btn.active {
+      background: #007aff; color: #fff;
+    }
+
+    .scroll-controls { margin-top: 10px; }
     .control-panel, .form-panel {
       background: #fff; padding: 15px; border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05); margin-bottom: 15px;
@@ -140,12 +141,6 @@
 <body>
 
   <div class="sticky-preview">
-    <!-- 表面・裏面 切り替えタブ -->
-    <div class="side-tabs hidden" id="sideTabContainer">
-      <div class="side-tab-btn active" id="tabFrontBtn">表面を編集</div>
-      <div class="side-tab-btn" id="tabBackBtn">裏面を編集</div>
-    </div>
-
     <div class="preview-wrapper">
       <div class="preview-container" id="previewArea">
         <div class="printable-area"><span class="printable-label">加工可能範囲(内側2mm)</span></div>
@@ -158,6 +153,12 @@
   </div>
 
   <div class="scroll-controls">
+    <!-- 表面・裏面 切り替えタブ（画像と設定パネルの間に配置） -->
+    <div class="side-tabs hidden" id="sideTabContainer">
+      <div class="side-tab-btn active" id="tabFrontBtn">表面を編集</div>
+      <div class="side-tab-btn" id="tabBackBtn">裏面を編集</div>
+    </div>
+
     <div class="control-panel">
       <div class="panel-title">1. デザイン調整</div>
       
@@ -520,7 +521,6 @@
       saveCurrentControlsToData();
       const tempSide = currentSide;
       
-      // 対象面に一時的に切り替えて描画
       currentSide = sideName;
       loadDataToControls();
       await document.fonts.ready;
@@ -538,7 +538,6 @@
         }
       });
 
-      // 元の面に復元
       currentSide = tempSide;
       loadDataToControls();
 
@@ -560,7 +559,6 @@
         return;
       }
 
-      // 画像の自動キャプチャ
       capturedFrontImage = await generateCanvasImageForSide('front');
       if (isDoubleSided) {
         capturedBackImage = await generateCanvasImageForSide('back');
@@ -568,7 +566,6 @@
         capturedBackImage = "";
       }
 
-      // モーダル内の画像表示を構成
       const imgGrid = document.getElementById('modalImgGrid');
       imgGrid.innerHTML = `
         <div class="modal-img-wrapper">
