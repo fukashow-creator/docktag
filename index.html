@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.7.1 - 2026/10/01】ステンレスシルバーを一番左（先頭）に配置 -->
+<!-- 【バージョン: v1.7.2 - 2026/10/01】カラー切り替え時の背景グラデーションバグ修正版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -331,7 +331,7 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
-    // 9色のマスター定義（ステンレスシルバーを先頭に設定）
+    // 9色のマスター定義
     const COLOR_MAP = {
       stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true },
       black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff", isGrad: false },
@@ -344,7 +344,7 @@
       pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false }
     };
 
-    let selectedColorKey = "stainless"; // デフォルトをステンレスシルバーに変更
+    let selectedColorKey = "stainless";
     let currentSide = "front";
     let isDoubleSided = false;
 
@@ -435,15 +435,17 @@
       });
     }
 
+    // カラー切替処理（背景画像リセットを追加して修正）
     function setColor(colorKey) {
       if (!COLOR_MAP[colorKey]) colorKey = "stainless";
       selectedColorKey = colorKey;
 
       const cData = COLOR_MAP[selectedColorKey];
+      
       if (cData.isGrad) {
         previewArea.style.background = cData.hex;
       } else {
-        previewArea.style.background = "";
+        previewArea.style.backgroundImage = 'none'; // 前のグラデーションを消去
         previewArea.style.backgroundColor = cData.hex;
       }
 
@@ -451,6 +453,11 @@
 
       lines.forEach(line => {
         line.prev.style.color = cData.textHex;
+        if (cData.textHex === "#ffffff") {
+          line.prev.style.textShadow = "0 0 2px rgba(0,0,0,0.5)";
+        } else {
+          line.prev.style.textShadow = "0 0 2px rgba(255,255,255,0.5)";
+        }
       });
 
       document.querySelectorAll('.color-item').forEach((el, idx) => {
