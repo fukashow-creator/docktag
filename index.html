@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.5.1 - 2026/09/30】両面切替タブの位置をプレビュー直下へ移動 -->
+<!-- 【バージョン: v1.6 - 2026/10/01】8色カラーバリエーション＆URLパラメータ(NFC/QR)対応 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,11 +30,12 @@
     .preview-container {
       width: 100%;
       height: 100%;
-      background-color: #e0e0e0;
+      background-color: #222224; /* デフォルト：黒 */
       position: relative;
       border-radius: 12% / 50%;
       overflow: hidden;
-      border: 2px solid #a0a0a0;
+      border: 2px solid #aaa;
+      transition: background-color 0.3s ease;
     }
 
     .printable-area {
@@ -63,16 +64,17 @@
 
     .preview-container .engraved-line {
       position: absolute;
-      color: #1a1a1a;
+      color: #ffffff; /* タグ色に応じて自動調整 */
       white-space: nowrap;
       user-select: none;
       pointer-events: none;
       transform: translate(-50%, -50%);
       z-index: 2;
       line-height: 1;
+      text-shadow: 0 0 2px rgba(0,0,0,0.3);
     }
 
-    /* 表面/裏面 切替タブ (画像直下用) */
+    /* 表面/裏面 切替タブ */
     .side-tabs {
       display: flex; gap: 8px; margin-top: 12px; margin-bottom: 5px;
     }
@@ -83,6 +85,20 @@
     }
     .side-tab-btn.active {
       background: #007aff; color: #fff;
+    }
+
+    /* カラー選択パレット */
+    .color-palette {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; margin-bottom: 10px;
+    }
+    .color-item {
+      width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; position: relative;
+      transition: transform 0.15s ease;
+    }
+    .color-item:active { transform: scale(0.9); }
+    .color-item.selected {
+      border: 3px solid #007aff; transform: scale(1.1); box-shadow: 0 0 8px rgba(0,122,255,0.5);
     }
 
     .scroll-controls { margin-top: 10px; }
@@ -117,7 +133,7 @@
     .btn-submit { background-color: #007aff; color: white; margin-top: 10px; }
     .btn-submit:disabled { background-color: #ccc; cursor: not-allowed; }
 
-    /* モーダル（確認ダイアログ）スタイル */
+    /* モーダルスタイル */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.6); z-index: 1000;
@@ -153,7 +169,7 @@
   </div>
 
   <div class="scroll-controls">
-    <!-- 表面・裏面 切り替えタブ（画像と設定パネルの間に配置） -->
+    <!-- 表面・裏面 切り替えタブ -->
     <div class="side-tabs hidden" id="sideTabContainer">
       <div class="side-tab-btn active" id="tabFrontBtn">表面を編集</div>
       <div class="side-tab-btn" id="tabBackBtn">裏面を編集</div>
@@ -162,6 +178,12 @@
     <div class="control-panel">
       <div class="panel-title">1. デザイン調整</div>
       
+      <!-- カラー選択 -->
+      <div class="input-group">
+        <label>本体カラー: <span id="colorNameLabel" style="color:#007aff; font-weight:bold;">ブラック</span></label>
+        <div class="color-palette" id="colorPalette"></div>
+      </div>
+
       <!-- 片面 / 両面 選択 -->
       <div class="input-group">
         <label>刻印面数</label>
@@ -296,10 +318,7 @@
       <div class="modal-title">ご注文内容の確認</div>
       <p style="font-size:0.8rem; color:#666; text-align:center; margin-bottom:10px;">以下の内容・完成デザインで注文を確定しますか？</p>
       
-      <div class="modal-img-grid" id="modalImgGrid">
-        <!-- JSで動的に画像を追加 -->
-      </div>
-
+      <div class="modal-img-grid" id="modalImgGrid"></div>
       <div class="modal-info" id="modalInfoText"></div>
 
       <div class="modal-btns">
@@ -312,10 +331,23 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
-    let currentSide = "front"; // "front" or "back"
+    // 8色のマスター定義
+    const COLOR_MAP = {
+      black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff" },
+      red:       { name: "レッド",   hex: "#8b2635", textHex: "#ffffff" },
+      orange:    { name: "オレンジ", hex: "#c85a32", textHex: "#ffffff" },
+      purple:    { name: "パープル", hex: "#5c3285", textHex: "#ffffff" },
+      lightblue: { name: "水色",     hex: "#0084c8", textHex: "#ffffff" },
+      blue:      { name: "ブルー",   hex: "#1240a8", textHex: "#ffffff" },
+      green:     { name: "グリーン", hex: "#1e824c", textHex: "#ffffff" },
+      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff" }
+    };
+
+    let selectedColorKey = "black"; // デフォルト色
+
+    let currentSide = "front";
     let isDoubleSided = false;
 
-    // 表面・裏面のデータを保持するオブジェクト
     const sideData = {
       front: {
         lineCount: 1,
@@ -340,6 +372,8 @@
     const sideTabContainer = document.getElementById('sideTabContainer');
     const tabFrontBtn = document.getElementById('tabFrontBtn');
     const tabBackBtn = document.getElementById('tabBackBtn');
+    const previewArea = document.getElementById('previewArea');
+    const colorNameLabel = document.getElementById('colorNameLabel');
 
     const lines = [
       {
@@ -380,7 +414,59 @@
       }
     ];
 
-    // 画面の入力をデータ構造に同期
+    // カラーパレット動的生成
+    function initColorPalette() {
+      const paletteContainer = document.getElementById('colorPalette');
+      paletteContainer.innerHTML = '';
+
+      Object.keys(COLOR_MAP).forEach(key => {
+        const item = COLOR_MAP[key];
+        const btn = document.createElement('div');
+        btn.className = `color-item ${key === selectedColorKey ? 'selected' : ''}`;
+        btn.style.backgroundColor = item.hex;
+        btn.title = item.name;
+
+        btn.addEventListener('click', () => setColor(key));
+        paletteContainer.appendChild(btn);
+      });
+    }
+
+    // カラー適用処理
+    function setColor(colorKey) {
+      if (!COLOR_MAP[colorKey]) colorKey = "black";
+      selectedColorKey = colorKey;
+
+      const cData = COLOR_MAP[selectedColorKey];
+      previewArea.style.backgroundColor = cData.hex;
+      colorNameLabel.textContent = cData.name;
+
+      // プレビュー上の文字色を補正
+      lines.forEach(line => {
+        line.prev.style.color = cData.textHex;
+      });
+
+      // パレット選択枠の再描画
+      document.querySelectorAll('.color-item').forEach((el, idx) => {
+        const key = Object.keys(COLOR_MAP)[idx];
+        if (key === selectedColorKey) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+    }
+
+    // URLパラメータ(?color=xxx)からカラー自動読み込み (NFC / QRコード用)
+    function applyColorFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const colorParam = urlParams.get('color');
+      if (colorParam && COLOR_MAP[colorParam.toLowerCase()]) {
+        setColor(colorParam.toLowerCase());
+      } else {
+        setColor("black");
+      }
+    }
+
     function saveCurrentControlsToData() {
       let count = 1;
       lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
@@ -397,7 +483,6 @@
       });
     }
 
-    // データをコントロール画面に適用
     function loadDataToControls() {
       const data = sideData[currentSide];
       
@@ -442,7 +527,6 @@
       });
     }
 
-    // 片面 / 両面 切り替え
     sideRadios.forEach(r => {
       r.addEventListener('change', (e) => {
         isDoubleSided = (e.target.value === 'double');
@@ -450,12 +534,11 @@
           sideTabContainer.classList.remove('hidden');
         } else {
           sideTabContainer.classList.add('hidden');
-          switchSide('front'); // 片面時は自動で表面へ
+          switchSide('front');
         }
       });
     });
 
-    // タブ切り替え処理
     function switchSide(targetSide) {
       if (currentSide === targetSide) return;
       saveCurrentControlsToData();
@@ -475,7 +558,6 @@
     tabFrontBtn.addEventListener('click', () => switchSide('front'));
     tabBackBtn.addEventListener('click', () => switchSide('back'));
 
-    // 入力イベント検知
     lineRadios.forEach(r => r.addEventListener('change', () => {
       saveCurrentControlsToData();
       updatePreviewUI();
@@ -488,7 +570,7 @@
       }));
     });
 
-    // 郵便番号からの住所自動入力機能 (Zipcloud API)
+    // Zipcloud API
     const zipInput = document.getElementById('custZip');
     const addressInput = document.getElementById('custAddress');
     const zipStatus = document.getElementById('zipStatus');
@@ -516,7 +598,6 @@
       }
     });
 
-    // キャプチャ画像作成用関数
     async function generateCanvasImageForSide(sideName) {
       saveCurrentControlsToData();
       const tempSide = currentSide;
@@ -525,7 +606,6 @@
       loadDataToControls();
       await document.fonts.ready;
 
-      const previewArea = document.getElementById('previewArea');
       const canvas = await html2canvas(previewArea, {
         scale: 2,
         useCORS: true,
@@ -547,7 +627,6 @@
     let capturedFrontImage = "";
     let capturedBackImage = "";
 
-    // 確認モーダルを開く
     document.getElementById('openConfirmBtn').addEventListener('click', async () => {
       const name = document.getElementById('custName').value;
       const phone = document.getElementById('custPhone').value;
@@ -584,6 +663,7 @@
       }
 
       document.getElementById('modalInfoText').innerHTML = `
+        <strong>本体カラー:</strong> ${COLOR_MAP[selectedColorKey].name}<br>
         <strong>刻印種類:</strong> ${isDoubleSided ? '両面刻印' : '片面刻印'}<br>
         <strong>お名前:</strong> ${name}<br>
         <strong>電話番号:</strong> ${phone}<br>
@@ -593,12 +673,10 @@
       document.getElementById('confirmModal').classList.remove('hidden');
     });
 
-    // モーダルを閉じる
     document.getElementById('closeModalBtn').addEventListener('click', () => {
       document.getElementById('confirmModal').classList.add('hidden');
     });
 
-    // 注文確定送信
     document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
       const finalBtn = document.getElementById('finalSubmitBtn');
       finalBtn.disabled = true;
@@ -611,6 +689,8 @@
         phone: document.getElementById('custPhone').value,
         zip: document.getElementById('custZip').value,
         address: document.getElementById('custAddress').value,
+        colorKey: selectedColorKey,
+        colorName: COLOR_MAP[selectedColorKey].name,
         isDoubleSided: isDoubleSided,
         imageDataFront: capturedFrontImage,
         imageDataBack: capturedBackImage,
@@ -639,7 +719,9 @@
       }
     });
 
-    // 初期化
+    // 初期化実行
+    initColorPalette();
+    applyColorFromUrl();
     loadDataToControls();
   </script>
 </body>
