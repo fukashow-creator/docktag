@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.7 - 2026/10/01】ステンレスシルバー追加＆全9色バリエーション対応 -->
+<!-- 【バージョン: v1.7.1 - 2026/10/01】ステンレスシルバーを一番左（先頭）に配置 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -30,7 +30,7 @@
     .preview-container {
       width: 100%;
       height: 100%;
-      background-color: #222224;
+      background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
       position: relative;
       border-radius: 12% / 50%;
       overflow: hidden;
@@ -64,14 +64,14 @@
 
     .preview-container .engraved-line {
       position: absolute;
-      color: #ffffff;
+      color: #1a1a1a;
       white-space: nowrap;
       user-select: none;
       pointer-events: none;
       transform: translate(-50%, -50%);
       z-index: 2;
       line-height: 1;
-      text-shadow: 0 0 2px rgba(0,0,0,0.3);
+      text-shadow: 0 0 2px rgba(255,255,255,0.3);
     }
 
     /* 表面/裏面 切替タブ */
@@ -180,7 +180,7 @@
       
       <!-- カラー選択 -->
       <div class="input-group">
-        <label>本体カラー: <span id="colorNameLabel" style="color:#007aff; font-weight:bold;">ブラック</span></label>
+        <label>本体カラー: <span id="colorNameLabel" style="color:#007aff; font-weight:bold;">ステンレスシルバー</span></label>
         <div class="color-palette" id="colorPalette"></div>
       </div>
 
@@ -331,8 +331,9 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
-    // 9色のマスター定義（ステンレスシルバー追加版）
+    // 9色のマスター定義（ステンレスシルバーを先頭に設定）
     const COLOR_MAP = {
+      stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true },
       black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff", isGrad: false },
       red:       { name: "レッド",   hex: "#8b2635", textHex: "#ffffff", isGrad: false },
       orange:    { name: "オレンジ", hex: "#c85a32", textHex: "#ffffff", isGrad: false },
@@ -340,11 +341,10 @@
       lightblue: { name: "水色",     hex: "#0084c8", textHex: "#ffffff", isGrad: false },
       blue:      { name: "ブルー",   hex: "#1240a8", textHex: "#ffffff", isGrad: false },
       green:     { name: "グリーン", hex: "#1e824c", textHex: "#ffffff", isGrad: false },
-      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false },
-      stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true }
+      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false }
     };
 
-    let selectedColorKey = "black";
+    let selectedColorKey = "stainless"; // デフォルトをステンレスシルバーに変更
     let currentSide = "front";
     let isDoubleSided = false;
 
@@ -436,7 +436,7 @@
     }
 
     function setColor(colorKey) {
-      if (!COLOR_MAP[colorKey]) colorKey = "black";
+      if (!COLOR_MAP[colorKey]) colorKey = "stainless";
       selectedColorKey = colorKey;
 
       const cData = COLOR_MAP[selectedColorKey];
@@ -469,7 +469,7 @@
       if (colorParam && COLOR_MAP[colorParam.toLowerCase()]) {
         setColor(colorParam.toLowerCase());
       } else {
-        setColor("black");
+        setColor("stainless");
       }
     }
 
