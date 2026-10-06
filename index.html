@@ -1,4 +1,4 @@
-<!-- 【バージョン: v2.0 - 2026/10/06】本格SVGベクター装飾フレーム対応版 -->
+<!-- 【バージョン: v2.1 - 2026/10/06】装飾枠削除・シンプル（縦伸び・字間・位置）調整版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -70,26 +70,9 @@
       pointer-events: none;
       transform-origin: center center;
       z-index: 2;
-      line-height: 1.1;
+      line-height: 1;
       text-shadow: 0 0 2px rgba(255,255,255,0.3);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 60%; /* 枠の最低幅を確保 */
     }
-
-    /* ベクター装飾枠用スタイル */
-    .deco-frame {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      color: inherit;
-    }
-    .deco-top { margin-bottom: 4px; }
-    /* 下の枠は上下反転して対のフレームにする */
-    .deco-bottom { margin-top: 4px; transform: scaleY(-1); }
 
     /* 表面/裏面 切替タブ */
     .side-tabs {
@@ -178,9 +161,9 @@
       <div class="preview-container" id="previewArea">
         <div class="printable-area"><span class="printable-label">加工可能範囲(内側2mm)</span></div>
         <div class="tag-hole"></div>
-        <div class="engraved-line" id="linePrev1"></div>
-        <div class="engraved-line hidden" id="linePrev2"></div>
-        <div class="engraved-line hidden" id="linePrev3"></div>
+        <div class="engraved-line" id="linePrev1">1行目の文字</div>
+        <div class="engraved-line hidden" id="linePrev2">2行目の文字</div>
+        <div class="engraved-line hidden" id="linePrev3">3行目の文字</div>
       </div>
     </div>
   </div>
@@ -236,17 +219,6 @@
             <option value="monospace">タイプライター風</option>
           </select>
         </div>
-        <!-- ベクター装飾フレーム選択 -->
-        <div class="input-group">
-          <label>アンティーク装飾フレーム</label>
-          <select id="frameSelect1">
-            <option value="none">なし（標準）</option>
-            <option value="elegant">エレガントカーブ</option>
-            <option value="classic">クラシックダブル</option>
-            <option value="arch">ロイヤルアーチ</option>
-            <option value="paw">🐾 肉球＆ライン</option>
-          </select>
-        </div>
         <div class="input-group">
           <label>文字サイズ (30〜100px)</label>
           <div class="range-group"><input type="range" id="sizeInput1" min="30" max="100" value="40"><span id="sizeVal1">40</span></div>
@@ -287,16 +259,6 @@
           </select>
         </div>
         <div class="input-group">
-          <label>アンティーク装飾フレーム</label>
-          <select id="frameSelect2">
-            <option value="none">なし（標準）</option>
-            <option value="elegant">エレガントカーブ</option>
-            <option value="classic">クラシックダブル</option>
-            <option value="arch">ロイヤルアーチ</option>
-            <option value="paw">🐾 肉球＆ライン</option>
-          </select>
-        </div>
-        <div class="input-group">
           <label>文字サイズ (30〜100px)</label>
           <div class="range-group"><input type="range" id="sizeInput2" min="30" max="100" value="35"><span id="sizeVal2">35</span></div>
         </div>
@@ -333,16 +295,6 @@
             <option value="'Cinzel', serif" selected>英数スタイリッシュ</option>
             <option value="'Great Vibes', cursive">英数筆記体</option>
             <option value="monospace">タイプライター風</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>アンティーク装飾フレーム</label>
-          <select id="frameSelect3">
-            <option value="none">なし（標準）</option>
-            <option value="elegant">エレガントカーブ</option>
-            <option value="classic">クラシックダブル</option>
-            <option value="arch">ロイヤルアーチ</option>
-            <option value="paw">🐾 肉球＆ライン</option>
           </select>
         </div>
         <div class="input-group">
@@ -415,15 +367,6 @@
       pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false }
     };
 
-    // 本格ベクター装飾(SVG)のマスター定義
-    const SVG_FRAMES = {
-      none: '',
-      elegant: `<svg viewBox="0 0 400 30" width="100%" height="1.5em" preserveAspectRatio="none" style="fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;overflow:visible;"><path d="M0,15 C50,15 80,5 120,15 C140,20 160,15 180,15" stroke-width="1.5" vector-effect="non-scaling-stroke"/><path d="M400,15 C350,15 320,5 280,15 C260,20 240,15 220,15" stroke-width="1.5" vector-effect="non-scaling-stroke"/><circle cx="200" cy="15" r="4" style="fill:currentColor;stroke:none;" vector-effect="non-scaling-stroke"/><circle cx="180" cy="15" r="2" style="fill:currentColor;stroke:none;" vector-effect="non-scaling-stroke"/><circle cx="220" cy="15" r="2" style="fill:currentColor;stroke:none;" vector-effect="non-scaling-stroke"/></svg>`,
-      classic: `<svg viewBox="0 0 400 30" width="100%" height="1.5em" preserveAspectRatio="none" style="fill:none;stroke:currentColor;overflow:visible;"><line x1="0" y1="10" x2="185" y2="10" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line x1="0" y1="20" x2="185" y2="20" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line x1="215" y1="10" x2="400" y2="10" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line x1="215" y1="20" x2="400" y2="20" stroke-width="1.5" vector-effect="non-scaling-stroke"/><path d="M200,2 L210,15 L200,28 L190,15 Z" style="fill:currentColor;stroke:none;" vector-effect="non-scaling-stroke"/></svg>`,
-      arch: `<svg viewBox="0 0 400 30" width="100%" height="1.5em" preserveAspectRatio="none" style="fill:none;stroke:currentColor;overflow:visible;"><path d="M0,25 C100,-5 300,-5 400,25" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M20,25 C100,5 300,5 380,25" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>`,
-      paw: `<svg viewBox="0 0 400 30" width="100%" height="1.5em" preserveAspectRatio="none" style="fill:currentColor;stroke:none;overflow:visible;"><line x1="0" y1="15" x2="175" y2="15" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line x1="225" y1="15" x2="400" y2="15" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"/><path d="M196,19 C196,14 204,14 204,19 C206,23 203,27 200,27 C197,27 194,23 196,19 Z" vector-effect="non-scaling-stroke"/><circle cx="191" cy="14" r="2.5" vector-effect="non-scaling-stroke"/><circle cx="196" cy="9" r="2.5" vector-effect="non-scaling-stroke"/><circle cx="204" cy="9" r="2.5" vector-effect="non-scaling-stroke"/><circle cx="209" cy="14" r="2.5" vector-effect="non-scaling-stroke"/></svg>`
-    };
-
     let selectedColorKey = "stainless";
     let currentSide = "front";
     let isDoubleSided = false;
@@ -432,17 +375,17 @@
       front: {
         lineCount: 1,
         lines: [
-          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", frame: "none", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
-          { text: "SECOND LINE", font: "'Great Vibes', cursive", frame: "none", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
-          { text: "THIRD LINE", font: "'Cinzel', serif", frame: "none", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
+          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
+          { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
+          { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
         ]
       },
       back: {
         lineCount: 1,
         lines: [
-          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", frame: "none", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
-          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", frame: "none", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
-          { text: "3RD LINE", font: "'Cinzel', serif", frame: "none", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
+          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
+          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
+          { text: "3RD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
         ]
       }
     };
@@ -460,7 +403,6 @@
         block: document.getElementById('blockLine1'),
         input: document.getElementById('textInput1'),
         font: document.getElementById('fontSelect1'),
-        frame: document.getElementById('frameSelect1'),
         size: document.getElementById('sizeInput1'),
         sizeVal: document.getElementById('sizeVal1'),
         scaleY: document.getElementById('scaleYInput1'),
@@ -477,7 +419,6 @@
         block: document.getElementById('blockLine2'),
         input: document.getElementById('textInput2'),
         font: document.getElementById('fontSelect2'),
-        frame: document.getElementById('frameSelect2'),
         size: document.getElementById('sizeInput2'),
         sizeVal: document.getElementById('sizeVal2'),
         scaleY: document.getElementById('scaleYInput2'),
@@ -494,7 +435,6 @@
         block: document.getElementById('blockLine3'),
         input: document.getElementById('textInput3'),
         font: document.getElementById('fontSelect3'),
-        frame: document.getElementById('frameSelect3'),
         size: document.getElementById('sizeInput3'),
         sizeVal: document.getElementById('sizeVal3'),
         scaleY: document.getElementById('scaleYInput3'),
@@ -583,7 +523,6 @@
         sideData[currentSide].lines[index] = {
           text: line.input.value,
           font: line.font.value,
-          frame: line.frame.value,
           size: parseInt(line.size.value),
           scaleY: parseInt(line.scaleY.value),
           spacing: parseInt(line.spacing.value),
@@ -604,7 +543,6 @@
         const item = data.lines[index];
         line.input.value = item.text;
         line.font.value = item.font;
-        line.frame.value = item.frame || "none";
         line.size.value = item.size;
         line.scaleY.value = item.scaleY || 100;
         line.spacing.value = item.spacing || 0;
@@ -624,37 +562,11 @@
           line.block.classList.remove('hidden');
           line.prev.classList.remove('hidden');
           
-          const frameKey = line.frame.value || 'none';
-          const svgContent = SVG_FRAMES[frameKey] || '';
-
-          // SVGと文字をセット
-          line.prev.innerHTML = '';
+          line.prev.textContent = line.input.value || ' ';
+          line.prev.style.fontFamily = line.font.value;
+          line.prev.style.fontSize = line.size.value + 'px';
+          line.prev.style.letterSpacing = line.spacing.value + 'px';
           
-          // 上部フレーム
-          if (svgContent) {
-            const topDiv = document.createElement('div');
-            topDiv.className = 'deco-frame deco-top';
-            topDiv.innerHTML = svgContent;
-            line.prev.appendChild(topDiv);
-          }
-
-          // 中央テキスト
-          const span = document.createElement('span');
-          span.textContent = line.input.value || ' ';
-          span.style.fontFamily = line.font.value;
-          span.style.fontSize = line.size.value + 'px';
-          span.style.letterSpacing = line.spacing.value + 'px';
-          line.prev.appendChild(span);
-
-          // 下部フレーム（自動で反転）
-          if (svgContent) {
-            const botDiv = document.createElement('div');
-            botDiv.className = 'deco-frame deco-bottom';
-            botDiv.innerHTML = svgContent;
-            line.prev.appendChild(botDiv);
-          }
-          
-          // 全体の変形・配置
           const scaleYVal = line.scaleY.value / 100;
           line.prev.style.transform = `translate(-50%, -50%) scaleY(${scaleYVal})`;
           line.prev.style.left = line.posX.value + '%';
@@ -709,7 +621,7 @@
     }));
 
     lines.forEach(line => {
-      const elements = [line.input, line.font, line.frame, line.size, line.scaleY, line.spacing, line.posX, line.posY];
+      const elements = [line.input, line.font, line.size, line.scaleY, line.spacing, line.posX, line.posY];
       elements.forEach(el => {
         if (el) {
           el.addEventListener('input', () => {
