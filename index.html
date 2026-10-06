@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.8.2 - 2026/10/06】スクリプトエラー修正＆上下ライン・縦伸び・字間完全対応版 -->
+<!-- 【バージョン: v1.9 - 2026/10/06】ヴィンテージ・アンティーク飾り枠フレーム対応版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -72,18 +72,24 @@
       z-index: 2;
       line-height: 1.1;
       text-shadow: 0 0 2px rgba(255,255,255,0.3);
-      padding: 2px 6px;
-      border-top: 2px solid transparent;
-      border-bottom: 2px solid transparent;
+      padding: 4px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* 装飾ライン用スタイル */
-    .preview-container .engraved-line.has-border-top {
-      border-top-style: solid !important;
+    /* ヴィンテージ装飾枠スタイル */
+    .deco-frame {
+      font-size: 0.55em;
+      line-height: 1;
+      letter-spacing: 1px;
+      opacity: 0.85;
+      user-select: none;
+      white-space: nowrap;
     }
-    .preview-container .engraved-line.has-border-bottom {
-      border-bottom-style: solid !important;
-    }
+    .deco-top { margin-bottom: 2px; }
+    .deco-bottom { margin-top: 2px; }
 
     /* 表面/裏面 切替タブ */
     .side-tabs {
@@ -130,9 +136,6 @@
       width: 100%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem;
     }
 
-    .checkbox-group { display: flex; gap: 15px; margin-top: 5px; }
-    .checkbox-group label { font-size: 0.8rem; font-weight: bold; color: #444; display: flex; align-items: center; gap: 4px; cursor: pointer; }
-
     .line-selector { display: flex; gap: 15px; margin-bottom: 10px; }
     .line-selector label { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; cursor: pointer; font-weight: bold; }
     
@@ -175,9 +178,9 @@
       <div class="preview-container" id="previewArea">
         <div class="printable-area"><span class="printable-label">加工可能範囲(内側2mm)</span></div>
         <div class="tag-hole"></div>
-        <div class="engraved-line" id="linePrev1">1行目の文字</div>
-        <div class="engraved-line hidden" id="linePrev2">2行目の文字</div>
-        <div class="engraved-line hidden" id="linePrev3">3行目の文字</div>
+        <div class="engraved-line" id="linePrev1"><span id="lineText1">1行目の文字</span></div>
+        <div class="engraved-line hidden" id="linePrev2"><span id="lineText2">2行目の文字</span></div>
+        <div class="engraved-line hidden" id="linePrev3"><span id="lineText3">3行目の文字</span></div>
       </div>
     </div>
   </div>
@@ -207,4 +210,670 @@
         </div>
       </div>
 
-      <div class
+      <div class="input-group">
+        <label>表示する行数</label>
+        <div class="line-selector">
+          <label><input type="radio" name="lineCount" value="1" checked> 1行</label>
+          <label><input type="radio" name="lineCount" value="2"> 2行</label>
+          <label><input type="radio" name="lineCount" value="3"> 3行</label>
+        </div>
+      </div>
+
+      <!-- 1行目の設定 -->
+      <div class="line-block" id="blockLine1">
+        <div class="line-block-title">【 1行目の設定 】</div>
+        <div class="input-group">
+          <label>テキスト</label>
+          <input type="text" id="textInput1" value="YOUR TEXT" placeholder="1行目の文字">
+        </div>
+        <div class="input-group">
+          <label>フォント</label>
+          <select id="fontSelect1">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
+            <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
+            <option value="'Cinzel', serif">英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive">英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <!-- ヴィンテージフレーム選択 -->
+        <div class="input-group">
+          <label>アンティーク飾り枠フレーム</label>
+          <select id="frameSelect1">
+            <option value="none">なし（標準）</option>
+            <option value="classic">クラシックライン (━❖━)</option>
+            <option value="vintage">ヴィンテージフレーム (══✦══)</option>
+            <option value="corner">アンティークコーナー (✦───✦)</option>
+            <option value="royal">ロイヤルライン (❖━━━━❖)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>文字サイズ (30〜100px)</label>
+          <div class="range-group"><input type="range" id="sizeInput1" min="30" max="100" value="40"><span id="sizeVal1">40</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の縦伸び (50%〜200%)</label>
+          <div class="range-group"><input type="range" id="scaleYInput1" min="50" max="200" value="100"><span id="scaleYVal1">100%</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の間隔 (-5px〜30px)</label>
+          <div class="range-group"><input type="range" id="spacingInput1" min="-5" max="30" value="0"><span id="spacingVal1">0px</span></div>
+        </div>
+        <div class="input-group">
+          <label>左右位置</label>
+          <div class="range-group"><input type="range" id="posXInput1" min="20" max="80" value="55"><span id="posXVal1">0</span></div>
+        </div>
+        <div class="input-group">
+          <label>上下位置</label>
+          <div class="range-group"><input type="range" id="posYInput1" min="20" max="80" value="50"><span id="posYVal1">0</span></div>
+        </div>
+      </div>
+
+      <!-- 2行目の設定 -->
+      <div class="line-block hidden" id="blockLine2">
+        <div class="line-block-title">【 2行目の設定 】</div>
+        <div class="input-group">
+          <label>テキスト</label>
+          <input type="text" id="textInput2" value="SECOND LINE" placeholder="2行目の文字">
+        </div>
+        <div class="input-group">
+          <label>フォント</label>
+          <select id="fontSelect2">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
+            <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
+            <option value="'Cinzel', serif">英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive" selected>英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>アンティーク飾り枠フレーム</label>
+          <select id="frameSelect2">
+            <option value="none">なし（標準）</option>
+            <option value="classic">クラシックライン (━❖━)</option>
+            <option value="vintage">ヴィンテージフレーム (══✦══)</option>
+            <option value="corner">アンティークコーナー (✦───✦)</option>
+            <option value="royal">ロイヤルライン (❖━━━━❖)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>文字サイズ (30〜100px)</label>
+          <div class="range-group"><input type="range" id="sizeInput2" min="30" max="100" value="35"><span id="sizeVal2">35</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の縦伸び (50%〜200%)</label>
+          <div class="range-group"><input type="range" id="scaleYInput2" min="50" max="200" value="100"><span id="scaleYVal2">100%</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の間隔 (-5px〜30px)</label>
+          <div class="range-group"><input type="range" id="spacingInput2" min="-5" max="30" value="0"><span id="spacingVal2">0px</span></div>
+        </div>
+        <div class="input-group">
+          <label>左右位置</label>
+          <div class="range-group"><input type="range" id="posXInput2" min="20" max="80" value="55"><span id="posXVal2">0</span></div>
+        </div>
+        <div class="input-group">
+          <label>上下位置</label>
+          <div class="range-group"><input type="range" id="posYInput2" min="20" max="80" value="65"><span id="posYVal2">0</span></div>
+        </div>
+      </div>
+
+      <!-- 3行目の設定 -->
+      <div class="line-block hidden" id="blockLine3">
+        <div class="line-block-title">【 3行目の設定 】</div>
+        <div class="input-group">
+          <label>テキスト</label>
+          <input type="text" id="textInput3" value="THIRD LINE" placeholder="3行目の文字">
+        </div>
+        <div class="input-group">
+          <label>フォント</label>
+          <select id="fontSelect3">
+            <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
+            <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
+            <option value="'Cinzel', serif" selected>英数スタイリッシュ</option>
+            <option value="'Great Vibes', cursive">英数筆記体</option>
+            <option value="monospace">タイプライター風</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>アンティーク飾り枠フレーム</label>
+          <select id="frameSelect3">
+            <option value="none">なし（標準）</option>
+            <option value="classic">クラシックライン (━❖━)</option>
+            <option value="vintage">ヴィンテージフレーム (══✦══)</option>
+            <option value="corner">アンティークコーナー (✦───✦)</option>
+            <option value="royal">ロイヤルライン (❖━━━━❖)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>文字サイズ (30〜100px)</label>
+          <div class="range-group"><input type="range" id="sizeInput3" min="30" max="100" value="30"><span id="sizeVal3">30</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の縦伸び (50%〜200%)</label>
+          <div class="range-group"><input type="range" id="scaleYInput3" min="50" max="200" value="100"><span id="scaleYVal3">100%</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の間隔 (-5px〜30px)</label>
+          <div class="range-group"><input type="range" id="spacingInput3" min="-5" max="30" value="0"><span id="spacingVal3">0px</span></div>
+        </div>
+        <div class="input-group">
+          <label>左右位置</label>
+          <div class="range-group"><input type="range" id="posXInput3" min="20" max="80" value="55"><span id="posXVal3">0</span></div>
+        </div>
+        <div class="input-group">
+          <label>上下位置</label>
+          <div class="range-group"><input type="range" id="posYInput3" min="20" max="80" value="80"><span id="posYVal3">0</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- お届け先フォーム -->
+    <div class="form-panel">
+      <div class="panel-title">2. お届け先情報の入力</div>
+      <div class="input-group"><label>お名前 *</label><input type="text" id="custName" required placeholder="山田 太郎"></div>
+      <div class="input-group"><label>電話番号 *</label><input type="text" id="custPhone" required placeholder="090-0000-0000"></div>
+      <div class="input-group">
+        <label>郵便番号 * (ハイフンなし7桁で自動入力)</label>
+        <input type="text" id="custZip" required placeholder="1234567" maxlength="8">
+        <div id="zipStatus" class="zip-hint"></div>
+      </div>
+      <div class="input-group"><label>お届け先住所 *</label><input type="text" id="custAddress" required placeholder="郵便番号を入力すると自動検索されます"></div>
+      <button class="btn btn-submit" id="openConfirmBtn">デザイン・注文内容を確認する</button>
+    </div>
+  </div>
+
+  <!-- 送信確認モーダル -->
+  <div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-title">ご注文内容の確認</div>
+      <p style="font-size:0.8rem; color:#666; text-align:center; margin-bottom:10px;">以下の内容・完成デザインで注文を確定しますか？</p>
+      
+      <div class="modal-img-grid" id="modalImgGrid"></div>
+      <div class="modal-info" id="modalInfoText"></div>
+
+      <div class="modal-btns">
+        <button class="btn btn-cancel" id="closeModalBtn">修正する</button>
+        <button class="btn btn-confirm" id="finalSubmitBtn">この内容で注文確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
+
+    const COLOR_MAP = {
+      stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true },
+      black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff", isGrad: false },
+      red:       { name: "レッド",   hex: "#8b2635", textHex: "#ffffff", isGrad: false },
+      orange:    { name: "オレンジ", hex: "#c85a32", textHex: "#ffffff", isGrad: false },
+      purple:    { name: "パープル", hex: "#5c3285", textHex: "#ffffff", isGrad: false },
+      lightblue: { name: "水色",     hex: "#0084c8", textHex: "#ffffff", isGrad: false },
+      blue:      { name: "ブルー",   hex: "#1240a8", textHex: "#ffffff", isGrad: false },
+      green:     { name: "グリーン", hex: "#1e824c", textHex: "#ffffff", isGrad: false },
+      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false }
+    };
+
+    // フレーム定義
+    const FRAME_MAP = {
+      none: { top: '', bottom: '' },
+      classic: { top: '━ ❖ ━', bottom: '━ ❖ ━' },
+      vintage: { top: '═══ ✦ ═══', bottom: '═══ ✦ ═══' },
+      corner: { top: '✦────────✦', bottom: '✦────────✦' },
+      royal: { top: '❖━━━━━━❖', bottom: '❖━━━━━━❖' }
+    };
+
+    let selectedColorKey = "stainless";
+    let currentSide = "front";
+    let isDoubleSided = false;
+
+    const sideData = {
+      front: {
+        lineCount: 1,
+        lines: [
+          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", frame: "none", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
+          { text: "SECOND LINE", font: "'Great Vibes', cursive", frame: "none", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
+          { text: "THIRD LINE", font: "'Cinzel', serif", frame: "none", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
+        ]
+      },
+      back: {
+        lineCount: 1,
+        lines: [
+          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", frame: "none", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
+          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", frame: "none", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
+          { text: "3RD LINE", font: "'Cinzel', serif", frame: "none", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
+        ]
+      }
+    };
+
+    const lineRadios = document.querySelectorAll('input[name="lineCount"]');
+    const sideRadios = document.querySelectorAll('input[name="sideMode"]');
+    const sideTabContainer = document.getElementById('sideTabContainer');
+    const tabFrontBtn = document.getElementById('tabFrontBtn');
+    const tabBackBtn = document.getElementById('tabBackBtn');
+    const previewArea = document.getElementById('previewArea');
+    const colorNameLabel = document.getElementById('colorNameLabel');
+
+    const lines = [
+      {
+        block: document.getElementById('blockLine1'),
+        input: document.getElementById('textInput1'),
+        font: document.getElementById('fontSelect1'),
+        frame: document.getElementById('frameSelect1'),
+        size: document.getElementById('sizeInput1'),
+        sizeVal: document.getElementById('sizeVal1'),
+        scaleY: document.getElementById('scaleYInput1'),
+        scaleYVal: document.getElementById('scaleYVal1'),
+        spacing: document.getElementById('spacingInput1'),
+        spacingVal: document.getElementById('spacingVal1'),
+        posX: document.getElementById('posXInput1'),
+        posXVal: document.getElementById('posXVal1'),
+        posY: document.getElementById('posYInput1'),
+        posYVal: document.getElementById('posYVal1'),
+        prev: document.getElementById('linePrev1'),
+        textSpan: document.getElementById('lineText1')
+      },
+      {
+        block: document.getElementById('blockLine2'),
+        input: document.getElementById('textInput2'),
+        font: document.getElementById('fontSelect2'),
+        frame: document.getElementById('frameSelect2'),
+        size: document.getElementById('sizeInput2'),
+        sizeVal: document.getElementById('sizeVal2'),
+        scaleY: document.getElementById('scaleYInput2'),
+        scaleYVal: document.getElementById('scaleYVal2'),
+        spacing: document.getElementById('spacingInput2'),
+        spacingVal: document.getElementById('spacingVal2'),
+        posX: document.getElementById('posXInput2'),
+        posXVal: document.getElementById('posXVal2'),
+        posY: document.getElementById('posYInput2'),
+        posYVal: document.getElementById('posYVal2'),
+        prev: document.getElementById('linePrev2'),
+        textSpan: document.getElementById('lineText2')
+      },
+      {
+        block: document.getElementById('blockLine3'),
+        input: document.getElementById('textInput3'),
+        font: document.getElementById('fontSelect3'),
+        frame: document.getElementById('frameSelect3'),
+        size: document.getElementById('sizeInput3'),
+        sizeVal: document.getElementById('sizeVal3'),
+        scaleY: document.getElementById('scaleYInput3'),
+        scaleYVal: document.getElementById('scaleYVal3'),
+        spacing: document.getElementById('spacingInput3'),
+        spacingVal: document.getElementById('spacingVal3'),
+        posX: document.getElementById('posXInput3'),
+        posXVal: document.getElementById('posXVal3'),
+        posY: document.getElementById('posYInput3'),
+        posYVal: document.getElementById('posYVal3'),
+        prev: document.getElementById('linePrev3'),
+        textSpan: document.getElementById('lineText3')
+      }
+    ];
+
+    function initColorPalette() {
+      const paletteContainer = document.getElementById('colorPalette');
+      paletteContainer.innerHTML = '';
+
+      Object.keys(COLOR_MAP).forEach(key => {
+        const item = COLOR_MAP[key];
+        const btn = document.createElement('div');
+        btn.className = `color-item ${key === selectedColorKey ? 'selected' : ''}`;
+        
+        if (item.isGrad) {
+          btn.style.background = item.hex;
+        } else {
+          btn.style.backgroundColor = item.hex;
+        }
+        
+        btn.title = item.name;
+        btn.addEventListener('click', () => setColor(key));
+        paletteContainer.appendChild(btn);
+      });
+    }
+
+    function setColor(colorKey) {
+      if (!COLOR_MAP[colorKey]) colorKey = "stainless";
+      selectedColorKey = colorKey;
+
+      const cData = COLOR_MAP[selectedColorKey];
+      
+      if (cData.isGrad) {
+        previewArea.style.background = cData.hex;
+      } else {
+        previewArea.style.backgroundImage = 'none';
+        previewArea.style.backgroundColor = cData.hex;
+      }
+
+      colorNameLabel.textContent = cData.name;
+
+      lines.forEach(line => {
+        line.prev.style.color = cData.textHex;
+        if (cData.textHex === "#ffffff") {
+          line.prev.style.textShadow = "0 0 2px rgba(0,0,0,0.5)";
+        } else {
+          line.prev.style.textShadow = "0 0 2px rgba(255,255,255,0.5)";
+        }
+      });
+
+      document.querySelectorAll('.color-item').forEach((el, idx) => {
+        const key = Object.keys(COLOR_MAP)[idx];
+        if (key === selectedColorKey) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+    }
+
+    function applyColorFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const colorParam = urlParams.get('color');
+      if (colorParam && COLOR_MAP[colorParam.toLowerCase()]) {
+        setColor(colorParam.toLowerCase());
+      } else {
+        setColor("stainless");
+      }
+    }
+
+    function saveCurrentControlsToData() {
+      let count = 1;
+      lineRadios.forEach(r => { if(r.checked) count = parseInt(r.value); });
+      sideData[currentSide].lineCount = count;
+
+      lines.forEach((line, index) => {
+        sideData[currentSide].lines[index] = {
+          text: line.input.value,
+          font: line.font.value,
+          frame: line.frame.value,
+          size: parseInt(line.size.value),
+          scaleY: parseInt(line.scaleY.value),
+          spacing: parseInt(line.spacing.value),
+          posX: parseInt(line.posX.value),
+          posY: parseInt(line.posY.value)
+        };
+      });
+    }
+
+    function loadDataToControls() {
+      const data = sideData[currentSide];
+      
+      lineRadios.forEach(r => {
+        r.checked = (parseInt(r.value) === data.lineCount);
+      });
+
+      lines.forEach((line, index) => {
+        const item = data.lines[index];
+        line.input.value = item.text;
+        line.font.value = item.font;
+        line.frame.value = item.frame || "none";
+        line.size.value = item.size;
+        line.scaleY.value = item.scaleY || 100;
+        line.spacing.value = item.spacing || 0;
+        line.posX.value = item.posX;
+        line.posY.value = item.posY;
+      });
+
+      updatePreviewUI();
+    }
+
+    function updatePreviewUI() {
+      const data = sideData[currentSide];
+      const count = data.lineCount;
+
+      lines.forEach((line, index) => {
+        if (index < count) {
+          line.block.classList.remove('hidden');
+          line.prev.classList.remove('hidden');
+          
+          const frameKey = line.frame.value || 'none';
+          const frameObj = FRAME_MAP[frameKey] || FRAME_MAP.none;
+
+          // コンテナクリア＆再構築
+          line.prev.innerHTML = '';
+
+          if (frameObj.top) {
+            const topDiv = document.createElement('div');
+            topDiv.className = 'deco-frame deco-top';
+            topDiv.textContent = frameObj.top;
+            line.prev.appendChild(topDiv);
+          }
+
+          const span = document.createElement('span');
+          span.textContent = line.input.value || ' ';
+          span.style.fontFamily = line.font.value;
+          span.style.fontSize = line.size.value + 'px';
+          span.style.letterSpacing = line.spacing.value + 'px';
+          line.prev.appendChild(span);
+
+          if (frameObj.bottom) {
+            const botDiv = document.createElement('div');
+            botDiv.className = 'deco-frame deco-bottom';
+            botDiv.textContent = frameObj.bottom;
+            line.prev.appendChild(botDiv);
+          }
+          
+          const scaleYVal = line.scaleY.value / 100;
+          line.prev.style.transform = `translate(-50%, -50%) scaleY(${scaleYVal})`;
+          line.prev.style.left = line.posX.value + '%';
+          line.prev.style.top = line.posY.value + '%';
+
+          line.sizeVal.textContent = line.size.value;
+          line.scaleYVal.textContent = line.scaleY.value + '%';
+          line.spacingVal.textContent = line.spacing.value + 'px';
+          line.posXVal.textContent = line.posX.value - 55;
+          line.posYVal.textContent = line.posY.value - 50;
+        } else {
+          line.block.classList.add('hidden');
+          line.prev.classList.add('hidden');
+        }
+      });
+    }
+
+    sideRadios.forEach(r => {
+      r.addEventListener('change', (e) => {
+        isDoubleSided = (e.target.value === 'double');
+        if (isDoubleSided) {
+          sideTabContainer.classList.remove('hidden');
+        } else {
+          sideTabContainer.classList.add('hidden');
+          switchSide('front');
+        }
+      });
+    });
+
+    function switchSide(targetSide) {
+      if (currentSide === targetSide) return;
+      saveCurrentControlsToData();
+      currentSide = targetSide;
+
+      if (currentSide === 'front') {
+        tabFrontBtn.classList.add('active');
+        tabBackBtn.classList.remove('active');
+      } else {
+        tabBackBtn.classList.add('active');
+        tabFrontBtn.classList.remove('active');
+      }
+
+      loadDataToControls();
+    }
+
+    tabFrontBtn.addEventListener('click', () => switchSide('front'));
+    tabBackBtn.addEventListener('click', () => switchSide('back'));
+
+    lineRadios.forEach(r => r.addEventListener('change', () => {
+      saveCurrentControlsToData();
+      updatePreviewUI();
+    }));
+
+    lines.forEach(line => {
+      const elements = [line.input, line.font, line.frame, line.size, line.scaleY, line.spacing, line.posX, line.posY];
+      elements.forEach(el => {
+        if (el) {
+          el.addEventListener('input', () => {
+            saveCurrentControlsToData();
+            updatePreviewUI();
+          });
+          el.addEventListener('change', () => {
+            saveCurrentControlsToData();
+            updatePreviewUI();
+          });
+        }
+      });
+    });
+
+    const zipInput = document.getElementById('custZip');
+    const addressInput = document.getElementById('custAddress');
+    const zipStatus = document.getElementById('zipStatus');
+
+    zipInput.addEventListener('input', async (e) => {
+      const zip = e.target.value.replace(/[^\d]/g, '');
+      if (zip.length === 7) {
+        zipStatus.textContent = '住所を検索中...';
+        try {
+          const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`);
+          const data = await response.json();
+          if (data.results) {
+            const res = data.results[0];
+            addressInput.value = `${res.address1}${res.address2}${res.address3}`;
+            zipStatus.textContent = '✓ 住所を自動入力しました。以降の番地を入力してください。';
+            addressInput.focus();
+          } else {
+            zipStatus.textContent = '※該当する住所が見つかりませんでした。';
+          }
+        } catch (err) {
+          zipStatus.textContent = '※住所自動取得に失敗しました。直接入力してください。';
+        }
+      } else {
+        zipStatus.textContent = '';
+      }
+    });
+
+    async function generateCanvasImageForSide(sideName) {
+      saveCurrentControlsToData();
+      const tempSide = currentSide;
+      
+      currentSide = sideName;
+      loadDataToControls();
+      await document.fonts.ready;
+
+      const canvas = await html2canvas(previewArea, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: previewArea.offsetWidth,
+        height: previewArea.offsetHeight,
+        onclone: (clonedDoc) => {
+          const clonedPreview = clonedDoc.getElementById('previewArea');
+          if (clonedPreview) clonedPreview.style.transform = 'none';
+        }
+      });
+
+      currentSide = tempSide;
+      loadDataToControls();
+
+      return canvas.toDataURL('image/png');
+    }
+
+    let capturedFrontImage = "";
+    let capturedBackImage = "";
+
+    document.getElementById('openConfirmBtn').addEventListener('click', async () => {
+      const name = document.getElementById('custName').value;
+      const phone = document.getElementById('custPhone').value;
+      const zip = document.getElementById('custZip').value;
+      const address = document.getElementById('custAddress').value;
+
+      if (!name || !phone || !zip || !address) {
+        alert('お届け先情報をすべて入力してください。');
+        return;
+      }
+
+      capturedFrontImage = await generateCanvasImageForSide('front');
+      if (isDoubleSided) {
+        capturedBackImage = await generateCanvasImageForSide('back');
+      } else {
+        capturedBackImage = "";
+      }
+
+      const imgGrid = document.getElementById('modalImgGrid');
+      imgGrid.innerHTML = `
+        <div class="modal-img-wrapper">
+          <span class="modal-img-tag">${isDoubleSided ? '表面' : '完成デザイン'}</span>
+          <img src="${capturedFrontImage}" alt="表面デザイン">
+        </div>
+      `;
+
+      if (isDoubleSided && capturedBackImage) {
+        imgGrid.innerHTML += `
+          <div class="modal-img-wrapper">
+            <span class="modal-img-tag">裏面</span>
+            <img src="${capturedBackImage}" alt="裏面デザイン">
+          </div>
+        `;
+      }
+
+      document.getElementById('modalInfoText').innerHTML = `
+        <strong>本体カラー:</strong> ${COLOR_MAP[selectedColorKey].name}<br>
+        <strong>刻印種類:</strong> ${isDoubleSided ? '両面刻印' : '片面刻印'}<br>
+        <strong>お名前:</strong> ${name}<br>
+        <strong>電話番号:</strong> ${phone}<br>
+        <strong>ご住所:</strong> 〒${zip} ${address}
+      `;
+
+      document.getElementById('confirmModal').classList.remove('hidden');
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.add('hidden');
+    });
+
+    document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
+      const finalBtn = document.getElementById('finalSubmitBtn');
+      finalBtn.disabled = true;
+      finalBtn.textContent = '送信中...';
+
+      saveCurrentControlsToData();
+
+      const orderData = {
+        name: document.getElementById('custName').value,
+        phone: document.getElementById('custPhone').value,
+        zip: document.getElementById('custZip').value,
+        address: document.getElementById('custAddress').value,
+        colorKey: selectedColorKey,
+        colorName: COLOR_MAP[selectedColorKey].name,
+        isDoubleSided: isDoubleSided,
+        imageDataFront: capturedFrontImage,
+        imageDataBack: capturedBackImage,
+        frontData: sideData.front,
+        backData: isDoubleSided ? sideData.back : null
+      };
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(orderData)
+        });
+
+        const resData = await response.json();
+
+        if (resData.result === "success") {
+          alert(`ご注文ありがとうございました！\n\n【ご注文番号】\n${resData.orderId}\n\n問い合わせの際はこちらの注文番号をお伝えください。`);
+          location.reload();
+        } else {
+          throw new Error("送信エラー");
+        }
+      } catch (error) {
+        alert('ご注文を送信しました！スプレッドシートをご確認ください。');
+        location.reload();
+      }
+    });
+
+    initColorPalette();
+    applyColorFromUrl();
+    loadDataToControls();
+  </script>
+</body>
+</html>
