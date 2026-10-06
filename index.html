@@ -1,11 +1,11 @@
-<!-- 【バージョン: v2.1 - 2026/10/06】装飾枠削除・シンプル（縦伸び・字間・位置）調整版 -->
+<!-- 【バージョン: v2.2 - 2026/10/06】ミリタリー・ステンシルフォント追加版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ドックタグ名入れシミュレーター</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Great+Vibes&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Allerta+Stencil&family=Black+Ops+One&family=Cinzel:wght@600&family=Great+Vibes&family=Noto+Sans+JP:wght@500;700&family=Noto+Serif+JP:wght@600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans JP', sans-serif; }
@@ -212,6 +212,8 @@
         <div class="input-group">
           <label>フォント</label>
           <select id="fontSelect1">
+            <option value="'Black Ops One', cursive">★ステンシル（ミリタリー重厚）</option>
+            <option value="'Allerta Stencil', sans-serif">★ステンシル（ミリタリーシャープ）</option>
             <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
             <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
             <option value="'Cinzel', serif">英数スタイリッシュ</option>
@@ -251,6 +253,8 @@
         <div class="input-group">
           <label>フォント</label>
           <select id="fontSelect2">
+            <option value="'Black Ops One', cursive">★ステンシル（ミリタリー重厚）</option>
+            <option value="'Allerta Stencil', sans-serif">★ステンシル（ミリタリーシャープ）</option>
             <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
             <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
             <option value="'Cinzel', serif">英数スタイリッシュ</option>
@@ -290,6 +294,8 @@
         <div class="input-group">
           <label>フォント</label>
           <select id="fontSelect3">
+            <option value="'Black Ops One', cursive">★ステンシル（ミリタリー重厚）</option>
+            <option value="'Allerta Stencil', sans-serif">★ステンシル（ミリタリーシャープ）</option>
             <option value="'Noto Sans JP', sans-serif">ゴシック体（標準）</option>
             <option value="'Noto Serif JP', serif">明朝体（高級感）</option>
             <option value="'Cinzel', serif" selected>英数スタイリッシュ</option>
@@ -375,7 +381,7 @@
       front: {
         lineCount: 1,
         lines: [
-          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
+          { text: "YOUR TEXT", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
           { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
           { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
         ]
@@ -383,7 +389,7 @@
       back: {
         lineCount: 1,
         lines: [
-          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
+          { text: "BACK SIDE", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
           { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
           { text: "3RD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
         ]
