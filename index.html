@@ -1,4 +1,4 @@
-<!-- 【バージョン: v1.7.2 - 2026/10/01】カラー切り替え時の背景グラデーションバグ修正版 -->
+<!-- 【バージョン: v1.8 - 2026/10/06】文字縦伸縮・文字間隔・上下ライン装飾機能追加版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -68,11 +68,16 @@
       white-space: nowrap;
       user-select: none;
       pointer-events: none;
-      transform: translate(-50%, -50%);
+      transform-origin: center center;
       z-index: 2;
       line-height: 1;
       text-shadow: 0 0 2px rgba(255,255,255,0.3);
+      padding: 4px 0;
     }
+
+    /* 装飾ライン用スタイル */
+    .engraved-line.has-border-top { border-top: 2px solid dotted; }
+    .engraved-line.has-border-bottom { border-bottom: 2px solid dotted; }
 
     /* 表面/裏面 切替タブ */
     .side-tabs {
@@ -119,12 +124,15 @@
       width: 100%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem;
     }
 
+    .checkbox-group { display: flex; gap: 15px; margin-top: 5px; }
+    .checkbox-group label { font-size: 0.8rem; font-weight: bold; color: #444; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
     .line-selector { display: flex; gap: 15px; margin-bottom: 10px; }
     .line-selector label { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; cursor: pointer; font-weight: bold; }
     
     .range-group { display: flex; align-items: center; gap: 8px; }
     .range-group input[type="range"] { flex: 1; }
-    .range-group span { font-size: 0.75rem; width: 30px; text-align: right; }
+    .range-group span { font-size: 0.75rem; width: 35px; text-align: right; }
 
     .zip-hint { font-size: 0.7rem; color: #007aff; margin-top: 2px; }
     .hidden { display: none !important; }
@@ -223,6 +231,24 @@
           <label>文字サイズ (30〜100px)</label>
           <div class="range-group"><input type="range" id="sizeInput1" min="30" max="100" value="40"><span id="sizeVal1">40</span></div>
         </div>
+        <!-- 縦伸縮 (長体) -->
+        <div class="input-group">
+          <label>文字の縦伸び (50%〜200%)</label>
+          <div class="range-group"><input type="range" id="scaleYInput1" min="50" max="200" value="100"><span id="scaleYVal1">100%</span></div>
+        </div>
+        <!-- 文字間隔 -->
+        <div class="input-group">
+          <label>文字の間隔 (-5px〜30px)</label>
+          <div class="range-group"><input type="range" id="spacingInput1" min="-5" max="30" value="0"><span id="spacingVal1">0px</span></div>
+        </div>
+        <!-- 上下装飾ライン -->
+        <div class="input-group">
+          <label>装飾ライン</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="lineTop1"> 上ライン</label>
+            <label><input type="checkbox" id="lineBottom1"> 下ライン</label>
+          </div>
+        </div>
         <div class="input-group">
           <label>左右位置</label>
           <div class="range-group"><input type="range" id="posXInput1" min="20" max="80" value="55"><span id="posXVal1">0</span></div>
@@ -255,6 +281,21 @@
           <div class="range-group"><input type="range" id="sizeInput2" min="30" max="100" value="35"><span id="sizeVal2">35</span></div>
         </div>
         <div class="input-group">
+          <label>文字の縦伸び (50%〜200%)</label>
+          <div class="range-group"><input type="range" id="scaleYInput2" min="50" max="200" value="100"><span id="scaleYVal2">100%</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の間隔 (-5px〜30px)</label>
+          <div class="range-group"><input type="range" id="spacingInput2" min="-5" max="30" value="0"><span id="spacingVal2">0px</span></div>
+        </div>
+        <div class="input-group">
+          <label>装飾ライン</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="lineTop2"> 上ライン</label>
+            <label><input type="checkbox" id="lineBottom2"> 下ライン</label>
+          </div>
+        </div>
+        <div class="input-group">
           <label>左右位置</label>
           <div class="range-group"><input type="range" id="posXInput2" min="20" max="80" value="55"><span id="posXVal2">0</span></div>
         </div>
@@ -284,6 +325,21 @@
         <div class="input-group">
           <label>文字サイズ (30〜100px)</label>
           <div class="range-group"><input type="range" id="sizeInput3" min="30" max="100" value="30"><span id="sizeVal3">30</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の縦伸び (50%〜200%)</label>
+          <div class="range-group"><input type="range" id="scaleYInput3" min="50" max="200" value="100"><span id="scaleYVal3">100%</span></div>
+        </div>
+        <div class="input-group">
+          <label>文字の間隔 (-5px〜30px)</label>
+          <div class="range-group"><input type="range" id="spacingInput3" min="-5" max="30" value="0"><span id="spacingVal3">0px</span></div>
+        </div>
+        <div class="input-group">
+          <label>装飾ライン</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="lineTop3"> 上ライン</label>
+            <label><input type="checkbox" id="lineBottom3"> 下ライン</label>
+          </div>
         </div>
         <div class="input-group">
           <label>左右位置</label>
@@ -331,7 +387,6 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
-    // 9色のマスター定義
     const COLOR_MAP = {
       stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true },
       black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff", isGrad: false },
@@ -352,17 +407,17 @@
       front: {
         lineCount: 1,
         lines: [
-          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", size: 40, posX: 55, posY: 50 },
-          { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, posX: 55, posY: 65 },
-          { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, posX: 55, posY: 80 }
+          { text: "YOUR TEXT", font: "'Noto Sans JP', sans-serif", size: 40, scaleY: 100, spacing: 0, lineTop: false, lineBottom: false, posX: 55, posY: 50 },
+          { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, scaleY: 100, spacing: 0, lineTop: false, lineBottom: false, posX: 55, posY: 65 },
+          { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, lineTop: false, lineBottom: false, posX: 55, posY: 80 }
         ]
       },
       back: {
         lineCount: 1,
         lines: [
-          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", size: 40, posX: 55, posY: 50 },
-          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, posX: 55, posY: 65 },
-          { text: "3RD LINE", font: "'Cinzel', serif", size: 30, posX: 55, posY: 80 }
+          { text: "BACK SIDE", font: "'Noto Sans JP', sans-serif", size: 40, scaleY: 100, spacing: 0, lineTop: false, lineBottom: false, posX: 55, posY: 50 },
+          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, scaleY: 100, spacing: 0, lineTop: false, lineBottom: false, posX: 55, posY: 65 },
+          { text: "3RD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, lineTop: false, lineBottom: false, posX: 55, posY: 80 }
         ]
       }
     };
@@ -382,6 +437,12 @@
         font: document.getElementById('fontSelect1'),
         size: document.getElementById('sizeInput1'),
         sizeVal: document.getElementById('sizeVal1'),
+        scaleY: document.getElementById('scaleYInput1'),
+        scaleYVal: document.getElementById('scaleYVal1'),
+        spacing: document.getElementById('spacingInput1'),
+        spacingVal: document.getElementById('spacingVal1'),
+        lineTop: document.getElementById('lineTop1'),
+        lineBottom: document.getElementById('lineBottom1'),
         posX: document.getElementById('posXInput1'),
         posXVal: document.getElementById('posXVal1'),
         posY: document.getElementById('posYInput1'),
@@ -394,6 +455,12 @@
         font: document.getElementById('fontSelect2'),
         size: document.getElementById('sizeInput2'),
         sizeVal: document.getElementById('sizeVal2'),
+        scaleY: document.getElementById('scaleYInput2'),
+        scaleYVal: document.getElementById('scaleYVal2'),
+        spacing: document.getElementById('spacingInput2'),
+        spacingVal: document.getElementById('spacingVal2'),
+        lineTop: document.getElementById('lineTop2'),
+        lineBottom: document.getElementById('lineBottom2'),
         posX: document.getElementById('posXInput2'),
         posXVal: document.getElementById('posXVal2'),
         posY: document.getElementById('posYInput2'),
@@ -406,6 +473,12 @@
         font: document.getElementById('fontSelect3'),
         size: document.getElementById('sizeInput3'),
         sizeVal: document.getElementById('sizeVal3'),
+        scaleY: document.getElementById('scaleYInput3'),
+        scaleYVal: document.getElementById('scaleYVal3'),
+        spacing: document.getElementById('spacingInput3'),
+        spacingVal: document.getElementById('spacingVal3'),
+        lineTop: document.getElementById('lineTop3'),
+        lineBottom: document.getElementById('lineBottom3'),
         posX: document.getElementById('posXInput3'),
         posXVal: document.getElementById('posXVal3'),
         posY: document.getElementById('posYInput3'),
@@ -435,7 +508,6 @@
       });
     }
 
-    // カラー切替処理（背景画像リセットを追加して修正）
     function setColor(colorKey) {
       if (!COLOR_MAP[colorKey]) colorKey = "stainless";
       selectedColorKey = colorKey;
@@ -445,7 +517,7 @@
       if (cData.isGrad) {
         previewArea.style.background = cData.hex;
       } else {
-        previewArea.style.backgroundImage = 'none'; // 前のグラデーションを消去
+        previewArea.style.backgroundImage = 'none';
         previewArea.style.backgroundColor = cData.hex;
       }
 
@@ -455,8 +527,10 @@
         line.prev.style.color = cData.textHex;
         if (cData.textHex === "#ffffff") {
           line.prev.style.textShadow = "0 0 2px rgba(0,0,0,0.5)";
+          line.prev.style.borderColor = "#ffffff";
         } else {
           line.prev.style.textShadow = "0 0 2px rgba(255,255,255,0.5)";
+          line.prev.style.borderColor = "#1a1a1a";
         }
       });
 
@@ -490,6 +564,10 @@
           text: line.input.value,
           font: line.font.value,
           size: parseInt(line.size.value),
+          scaleY: parseInt(line.scaleY.value),
+          spacing: parseInt(line.spacing.value),
+          lineTop: line.lineTop.checked,
+          lineBottom: line.lineBottom.checked,
           posX: parseInt(line.posX.value),
           posY: parseInt(line.posY.value)
         };
@@ -508,6 +586,10 @@
         line.input.value = item.text;
         line.font.value = item.font;
         line.size.value = item.size;
+        line.scaleY.value = item.scaleY || 100;
+        line.spacing.value = item.spacing || 0;
+        line.lineTop.checked = !!item.lineTop;
+        line.lineBottom.checked = !!item.lineBottom;
         line.posX.value = item.posX;
         line.posY.value = item.posY;
       });
@@ -527,10 +609,31 @@
           line.prev.textContent = line.input.value || ' ';
           line.prev.style.fontFamily = line.font.value;
           line.prev.style.fontSize = line.size.value + 'px';
+          line.prev.style.letterSpacing = line.spacing.value + 'px';
+          
+          // transform (位置調整 + 縦伸縮 scaleY)
+          const scaleYVal = line.scaleY.value / 100;
+          line.prev.style.transform = `translate(-50%, -50%) scaleY(${scaleYVal})`;
+          
           line.prev.style.left = line.posX.value + '%';
           line.prev.style.top = line.posY.value + '%';
 
+          // 上下ライン装飾
+          if (line.lineTop.checked) {
+            line.prev.classList.add('has-border-top');
+          } else {
+            line.prev.classList.remove('has-border-top');
+          }
+
+          if (line.lineBottom.checked) {
+            line.prev.classList.add('has-border-bottom');
+          } else {
+            line.prev.classList.remove('has-border-bottom');
+          }
+
           line.sizeVal.textContent = line.size.value;
+          line.scaleYVal.textContent = line.scaleY.value + '%';
+          line.spacingVal.textContent = line.spacing.value + 'px';
           line.posXVal.textContent = line.posX.value - 55;
           line.posYVal.textContent = line.posY.value - 50;
         } else {
@@ -577,10 +680,16 @@
     }));
 
     lines.forEach(line => {
-      [line.input, line.font, line.size, line.posX, line.posY].forEach(el => el.addEventListener('input', () => {
-        saveCurrentControlsToData();
-        updatePreviewUI();
-      }));
+      [line.input, line.font, line.size, line.scaleY, line.spacing, line.lineTop, line.lineBottom, line.posX, line.posY].forEach(el => {
+        el.addEventListener('input', () => {
+          saveCurrentControlsToData();
+          updatePreviewUI();
+        });
+        el.addEventListener('change', () => {
+          saveCurrentControlsToData();
+          updatePreviewUI();
+        });
+      });
     });
 
     const zipInput = document.getElementById('custZip');
