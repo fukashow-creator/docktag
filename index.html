@@ -1,4 +1,4 @@
-<!-- 【バージョン: v3.3 - 2026/10/09】真鍮単色化＆複数形状統合版 -->
+<!-- 【バージョン: v3.5 - 2026/10/09】ラベル外だし配置＆骨型写真精密トレース版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -47,10 +47,10 @@
       background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
     }
 
-    /* 2. 骨型（ボーン型） */
+    /* 2. 骨型（ボーン型）実物写真精密SVGパス */
     .shape-bone {
       width: 90%;
-      height: 85%;
+      height: 75%;
       border-radius: 0;
       box-shadow: none;
       clip-path: url(#boneClipPath);
@@ -58,7 +58,7 @@
       background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
     }
 
-    /* 3. 真鍮丸型（単色仕様） */
+    /* 3. 真鍮丸型 */
     .shape-circle {
       width: 78%;
       aspect-ratio: 1 / 1;
@@ -67,34 +67,55 @@
       background-color: #c89d2a;
     }
 
-    /* 加工可能範囲（赤破線） */
-    .printable-area {
+    /* 加工可能範囲（長方形用） */
+    .shape-rectangle .printable-area {
       position: absolute;
+      left: 4%; right: 4%; top: 7.1%; bottom: 7.1%;
       border: 1.5px dashed #ff3b30;
+      border-radius: 8% / 40%;
       pointer-events: none;
       z-index: 3;
     }
 
-    .shape-rectangle .printable-area {
-      left: 4%; right: 4%; top: 7.1%; bottom: 7.1%;
-      border-radius: 8% / 40%;
-    }
-
-    .shape-bone .printable-area {
-      left: 20%; right: 20%; top: 22%; bottom: 15%;
-      border-radius: 6px;
-    }
-
+    /* 加工可能範囲（丸型用） */
     .shape-circle .printable-area {
+      position: absolute;
       left: 6%; right: 6%; top: 6%; bottom: 6%;
+      border: 1.5px dashed #ff3b30;
       border-radius: 50%;
+      pointer-events: none;
+      z-index: 3;
     }
 
-    .printable-label {
+    /* 骨型用SVG点線オーバーレイ */
+    .bone-printable-svg {
       position: absolute;
-      right: 8px; bottom: 4px;
-      font-size: 0.6rem; color: #ff3b30; font-weight: bold;
-      background: rgba(255,255,255,0.85); padding: 1px 4px; border-radius: 3px;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 3;
+      display: none;
+    }
+    .shape-bone .bone-printable-svg {
+      display: block;
+    }
+
+    /* 加工可能範囲の注釈ラベル（プレビュー画像枠外に配置） */
+    .printable-label-outer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: #ff3b30;
+      font-weight: bold;
+    }
+    .printable-label-badge {
+      display: inline-block;
+      width: 14px;
+      height: 0px;
+      border-bottom: 2px dashed #ff3b30;
     }
 
     /* 穴の位置 */
@@ -107,7 +128,7 @@
       left: 4%; top: 50%; transform: translateY(-50%); width: 6%; aspect-ratio: 1 / 1;
     }
     .shape-bone .tag-hole {
-      left: 50%; top: 8.5%; transform: translateX(-50%); width: 7.5%; aspect-ratio: 1 / 1;
+      left: 50%; top: 12%; transform: translateX(-50%); width: 7.5%; aspect-ratio: 1 / 1;
     }
     .shape-circle .tag-hole {
       left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1;
@@ -220,27 +241,27 @@
 </head>
 <body>
 
-  <!-- 実物写真トレース用SVGパス定義（非表示） -->
+  <!-- 実物写真トレース用SVG定義（非表示） -->
   <svg width="0" height="0" style="position: absolute;">
     <defs>
+      <!-- 実物ボーン外形切り抜き用 -->
       <clipPath id="boneClipPath" clipPathUnits="objectBoundingBox">
         <path d="
-          M 0.38,0.20
-          C 0.40,0.12 0.43,0 0.50,0
-          C 0.57,0 0.60,0.12 0.62,0.20
-          C 0.66,0.17 0.72,0.02 0.85,0.02
-          C 0.96,0.02 1.00,0.18 1.00,0.30
-          C 1.00,0.40 0.90,0.48 0.80,0.50
-          C 0.90,0.52 1.00,0.60 1.00,0.70
-          C 1.00,0.82 0.96,0.98 0.85,0.98
-          C 0.72,0.98 0.66,0.83 0.62,0.80
-          C 0.57,0.80 0.43,0.80 0.38,0.80
-          C 0.34,0.83 0.28,0.98 0.15,0.98
-          C 0.04,0.98 0.00,0.82 0.00,0.70
-          C 0.00,0.60 0.10,0.52 0.20,0.50
-          C 0.10,0.48 0.00,0.40 0.00,0.30
-          C 0.00,0.18 0.04,0.02 0.15,0.02
-          C 0.28,0.02 0.34,0.17 0.38,0.20
+          M 0.42,0.20
+          C 0.44,0.06 0.56,0.06 0.58,0.20
+          C 0.68,0.20 0.76,0.05 0.88,0.05
+          C 0.98,0.05 1.00,0.22 1.00,0.32
+          C 1.00,0.42 0.86,0.50 0.80,0.50
+          C 0.86,0.50 1.00,0.58 1.00,0.68
+          C 1.00,0.78 0.98,0.95 0.88,0.95
+          C 0.76,0.95 0.68,0.80 0.58,0.80
+          L 0.42,0.80
+          C 0.32,0.80 0.24,0.95 0.12,0.95
+          C 0.02,0.95 0.00,0.78 0.00,0.68
+          C 0.00,0.58 0.14,0.50 0.20,0.50
+          C 0.14,0.50 0.00,0.42 0.00,0.32
+          C 0.00,0.22 0.02,0.05 0.12,0.05
+          C 0.24,0.05 0.32,0.20 0.42,0.20
           Z
         " />
       </clipPath>
@@ -250,12 +271,40 @@
   <div class="sticky-preview">
     <div class="preview-wrapper">
       <div class="preview-container shape-rectangle" id="previewArea">
-        <div class="printable-area"><span class="printable-label">加工可能範囲</span></div>
+        <div class="printable-area" id="printableAreaBox"></div>
+        
+        <!-- 骨型デザイン専用：輪郭に沿った内側赤破線SVG -->
+        <svg class="bone-printable-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="
+            M 0.42,0.20
+            C 0.44,0.06 0.56,0.06 0.58,0.20
+            C 0.68,0.20 0.76,0.05 0.88,0.05
+            C 0.98,0.05 1.00,0.22 1.00,0.32
+            C 1.00,0.42 0.86,0.50 0.80,0.50
+            C 0.86,0.50 1.00,0.58 1.00,0.68
+            C 1.00,0.78 0.98,0.95 0.88,0.95
+            C 0.76,0.95 0.68,0.80 0.58,0.80
+            L 0.42,0.80
+            C 0.32,0.80 0.24,0.95 0.12,0.95
+            C 0.02,0.95 0.00,0.78 0.00,0.68
+            C 0.00,0.58 0.14,0.50 0.20,0.50
+            C 0.14,0.50 0.00,0.42 0.00,0.32
+            C 0.00,0.22 0.02,0.05 0.12,0.05
+            C 0.24,0.05 0.32,0.20 0.42,0.20
+            Z
+          " transform="scale(0.92) translate(4, 4)" fill="none" stroke="#ff3b30" stroke-width="1.2" stroke-dasharray="3,3" vector-effect="non-scaling-stroke" />
+        </svg>
+
         <div class="tag-hole"></div>
         <div class="engraved-line" id="linePrev1">1行目の文字</div>
         <div class="engraved-line hidden" id="linePrev2">2行目の文字</div>
         <div class="engraved-line hidden" id="linePrev3">3行目の文字</div>
       </div>
+    </div>
+    
+    <!-- プレビュー枠外に注釈ラベルを移動 -->
+    <div class="printable-label-outer">
+      <span class="printable-label-badge"></span> 赤破線：加工可能範囲 (内側2mm)
     </div>
   </div>
 
