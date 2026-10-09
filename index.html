@@ -1,4 +1,4 @@
-<!-- 【バージョン: v4.0 - 2026/10/09】骨型歪み完全追放・SVG直描画完全対応版 -->
+<!-- 【バージョン: v4.0 - 2026/10/09】骨型イラスト直描画・完全固定版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -38,22 +38,20 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      width: 100%;
+      height: 100%;
     }
 
     /* 1. ドッグタグ型（長方形） */
     .shape-rectangle {
-      width: 100%;
-      height: 100%;
       border-radius: 12% / 50%;
       border: 2px solid #aaa;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
     }
 
-    /* 2. 骨型（SVG直接描画のため枠背景は透明化） */
+    /* 2. 骨型（SVG直接描画のため背景透過） */
     .shape-bone {
-      width: 100%;
-      height: 100%;
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
@@ -92,13 +90,13 @@
       display: block;
     }
 
-    /* 骨型選択時の標準枠隠し */
+    /* 骨型選択時の標準枠非表示 */
     .shape-bone .printable-area { display: none !important; }
 
     /* 骨型専用SVG要素 */
     .bone-svg-render {
-      width: 92%;
-      height: 92%;
+      width: 95%;
+      height: 95%;
       display: none;
       filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.2));
     }
@@ -136,7 +134,6 @@
     .shape-circle .tag-hole {
       left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1; display: block;
     }
-    /* 骨型はSVG内部に穴が含まれるため外部穴DIVは非表示 */
     .shape-bone .tag-hole { display: none !important; }
 
     .preview-container .engraved-line {
@@ -253,7 +250,7 @@
         <!-- 四角・丸型用の加工範囲枠 -->
         <div class="printable-area" id="printableAreaBox"></div>
         
-        <!-- 骨型専用高精度SVG（形状・カラーグラデーション・赤破線すべてを内包） -->
+        <!-- 骨型専用高精度SVG（イラストと完全同一） -->
         <svg class="bone-svg-render" id="boneSvgRender" viewBox="0 0 500 320" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="boneMetalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -263,17 +260,16 @@
             </linearGradient>
           </defs>
           
-          <!-- 骨本体パス（実物写真100%忠実再現） -->
-          <path id="boneBodyPath" fill="url(#boneMetalGrad)" stroke="#1a1a1a" stroke-width="1.5"
-                d="M 215 45 C 215 25 230 10 250 10 C 270 10 285 45 285 45 C 330 65 350 40 400 40 C 455 40 480 80 480 120 C 480 150 455 165 440 165 C 455 165 480 180 480 210 C 480 250 455 290 400 290 C 350 290 330 265 250 265 C 170 265 150 290 100 290 C 45 290 20 250 20 210 C 20 180 45 165 60 165 C 45 165 20 150 20 120 C 20 80 45 40 100 40 C 150 40 170 65 215 45 Z" />
+          <!-- 骨本体パス（4つの完全な丸コブ＋中央平ら底辺＋上部穴突起） -->
+          <path id="boneBodyPath" fill="url(#boneMetalGrad)" stroke="#1a1a1a" stroke-width="2"
+                d="M 210 100 A 40 40 0 0 1 290 100 L 330 100 A 65 65 0 1 1 455 170 A 65 65 0 1 1 330 240 L 170 240 A 65 65 0 1 1 45 170 A 65 65 0 1 1 170 100 Z" />
           
           <!-- 丸穴 -->
-          <circle cx="250" cy="38" r="18" fill="#f5f5f7" stroke="#888" stroke-width="2"/>
+          <circle cx="250" cy="92" r="20" fill="#f5f5f7" stroke="#1a1a1a" stroke-width="2"/>
           
-          <!-- 赤破線（加工可能範囲：内側2mm追従） -->
+          <!-- 赤破線（加工可能範囲） -->
           <path fill="none" stroke="#ff3b30" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"
-                transform="matrix(0.91 0 0 0.91 22.5 14.4)"
-                d="M 215 45 C 215 25 230 10 250 10 C 270 10 285 45 285 45 C 330 65 350 40 400 40 C 455 40 480 80 480 120 C 480 150 455 165 440 165 C 455 165 480 180 480 210 C 480 250 455 290 400 290 C 350 290 330 265 250 265 C 170 265 150 290 100 290 C 45 290 20 250 20 210 C 20 180 45 165 60 165 C 45 165 20 150 20 120 C 20 80 45 40 100 40 C 150 40 170 65 215 45 Z" />
+                d="M 210 115 L 330 115 A 50 50 0 0 1 435 170 A 50 50 0 0 1 330 225 L 170 225 A 50 50 0 0 1 65 170 A 50 50 0 0 1 170 115 Z" />
         </svg>
 
         <div class="tag-hole"></div>
@@ -368,7 +364,7 @@
         </div>
         <div class="input-group">
           <label>上下位置</label>
-          <div class="range-group"><input type="range" id="posYInput1" min="20" max="80" value="50"><span id="posYVal1">0</span></div>
+          <div class="range-group"><input type="range" id="posYInput1" min="20" max="80" value="52"><span id="posYVal1">0</span></div>
         </div>
       </div>
 
@@ -518,7 +514,7 @@
       front: {
         lineCount: 1,
         lines: [
-          { text: "YOUR TEXT", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 50, posY: 50 },
+          { text: "YOUR TEXT", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 50, posY: 52 },
           { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, scaleY: 100, spacing: 0, posX: 50, posY: 65 },
           { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 50, posY: 80 }
         ]
@@ -526,7 +522,7 @@
       back: {
         lineCount: 1,
         lines: [
-          { text: "BACK SIDE", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 50, posY: 50 },
+          { text: "BACK SIDE", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 50, posY: 52 },
           { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, scaleY: 100, spacing: 0, posX: 50, posY: 65 },
           { text: "3RD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 50, posY: 80 }
         ]
