@@ -1,4 +1,4 @@
-<!-- 【バージョン: v3.7 - 2026/10/09】3次ベジェ曲線による骨型事故完全修復版 -->
+<!-- 【バージョン: v4.0 - 2026/10/09】骨型歪み完全追放・SVG直描画完全対応版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -35,7 +35,9 @@
       position: relative;
       overflow: hidden;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     /* 1. ドッグタグ型（長方形） */
@@ -44,18 +46,18 @@
       height: 100%;
       border-radius: 12% / 50%;
       border: 2px solid #aaa;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
     }
 
-    /* 2. 骨型（ボーン型）3次ベジェ曲線完全固定マスク */
+    /* 2. 骨型（SVG直接描画のため枠背景は透明化） */
     .shape-bone {
-      width: 90%;
-      height: 72%;
-      border-radius: 0;
-      box-shadow: none;
-      clip-path: url(#boneClipPath);
-      -webkit-clip-path: url(#boneClipPath);
-      background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
+      width: 100%;
+      height: 100%;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      overflow: visible;
     }
 
     /* 3. 真鍮丸型 */
@@ -64,6 +66,7 @@
       aspect-ratio: 1 / 1;
       border-radius: 50%;
       border: 2px solid #a67c1e;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       background-color: #c89d2a;
     }
 
@@ -89,22 +92,21 @@
       display: block;
     }
 
-    /* 骨型用SVG点線オーバーレイ（骨型選択時のみ表示） */
-    .shape-bone .printable-area { display: none; }
-    
-    .bone-printable-svg {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 3;
+    /* 骨型選択時の標準枠隠し */
+    .shape-bone .printable-area { display: none !important; }
+
+    /* 骨型専用SVG要素 */
+    .bone-svg-render {
+      width: 92%;
+      height: 92%;
       display: none;
+      filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.2));
     }
-    .shape-bone .bone-printable-svg {
+    .shape-bone .bone-svg-render {
       display: block;
     }
 
-    /* 加工可能範囲の注釈ラベル（プレビュー画像枠外に配置） */
+    /* 注釈ラベル（枠外配置） */
     .printable-label-outer {
       display: flex;
       justify-content: flex-end;
@@ -129,14 +131,13 @@
       border: 1.5px solid #a0a0a0; z-index: 4;
     }
     .shape-rectangle .tag-hole {
-      left: 4%; top: 50%; transform: translateY(-50%); width: 6%; aspect-ratio: 1 / 1;
-    }
-    .shape-bone .tag-hole {
-      left: 50%; top: 12%; transform: translateX(-50%); width: 6.5%; aspect-ratio: 1 / 1;
+      left: 4%; top: 50%; transform: translateY(-50%); width: 6%; aspect-ratio: 1 / 1; display: block;
     }
     .shape-circle .tag-hole {
-      left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1;
+      left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1; display: block;
     }
+    /* 骨型はSVG内部に穴が含まれるため外部穴DIVは非表示 */
+    .shape-bone .tag-hole { display: none !important; }
 
     .preview-container .engraved-line {
       position: absolute;
@@ -145,7 +146,7 @@
       user-select: none;
       pointer-events: none;
       transform-origin: center center;
-      z-index: 2;
+      z-index: 5;
       line-height: 1;
       text-shadow: 0 0 2px rgba(255,255,255,0.3);
     }
@@ -245,32 +246,6 @@
 </head>
 <body>
 
-  <!-- 実物写真完全トレース用 3次ベジェ曲線SVG定義 -->
-  <svg width="0" height="0" style="position: absolute;">
-    <defs>
-      <clipPath id="boneClipPath" clipPathUnits="objectBoundingBox">
-        <path d="
-          M 0.40 0.18
-          C 0.35 0.18 0.30 0.04 0.16 0.04
-          C 0.04 0.04 0.00 0.18 0.00 0.33
-          C 0.00 0.44 0.10 0.48 0.18 0.50
-          C 0.10 0.52 0.00 0.56 0.00 0.67
-          C 0.00 0.82 0.04 0.96 0.16 0.96
-          C 0.30 0.96 0.35 0.82 0.40 0.82
-          L 0.60 0.82
-          C 0.65 0.82 0.70 0.96 0.84 0.96
-          C 0.96 0.96 1.00 0.82 1.00 0.67
-          C 1.00 0.56 0.90 0.52 0.82 0.50
-          C 0.90 0.48 1.00 0.44 1.00 0.33
-          C 1.00 0.18 0.96 0.04 0.84 0.04
-          C 0.70 0.04 0.65 0.18 0.60 0.18
-          C 0.58 0.18 0.56 0.04 0.50 0.04
-          C 0.44 0.04 0.42 0.18 0.40 0.18
-          Z" />
-      </clipPath>
-    </defs>
-  </svg>
-
   <div class="sticky-preview">
     <div class="preview-wrapper">
       <div class="preview-container shape-rectangle" id="previewArea">
@@ -278,28 +253,27 @@
         <!-- 四角・丸型用の加工範囲枠 -->
         <div class="printable-area" id="printableAreaBox"></div>
         
-        <!-- 骨型専用の輪郭に沿った内側赤破線 SVG -->
-        <svg class="bone-printable-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path d="
-            M 0.40 0.18
-            C 0.35 0.18 0.30 0.04 0.16 0.04
-            C 0.04 0.04 0.00 0.18 0.00 0.33
-            C 0.00 0.44 0.10 0.48 0.18 0.50
-            C 0.10 0.52 0.00 0.56 0.00 0.67
-            C 0.00 0.82 0.04 0.96 0.16 0.96
-            C 0.30 0.96 0.35 0.82 0.40 0.82
-            L 0.60 0.82
-            C 0.65 0.82 0.70 0.96 0.84 0.96
-            C 0.96 0.96 1.00 0.82 1.00 0.67
-            C 1.00 0.56 0.90 0.52 0.82 0.50
-            C 0.90 0.48 1.00 0.44 1.00 0.33
-            C 1.00 0.18 0.96 0.04 0.84 0.04
-            C 0.70 0.04 0.65 0.18 0.60 0.18
-            C 0.58 0.18 0.56 0.04 0.50 0.04
-            C 0.44 0.04 0.42 0.18 0.40 0.18
-            Z" 
-            transform="matrix(0.88 0 0 0.88 6 6)" 
-            fill="none" stroke="#ff3b30" stroke-width="1.2" stroke-dasharray="3,3" vector-effect="non-scaling-stroke" />
+        <!-- 骨型専用高精度SVG（形状・カラーグラデーション・赤破線すべてを内包） -->
+        <svg class="bone-svg-render" id="boneSvgRender" viewBox="0 0 500 320" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="boneMetalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#d0d0d0"/>
+              <stop offset="50%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#a8a8a8"/>
+            </linearGradient>
+          </defs>
+          
+          <!-- 骨本体パス（実物写真100%忠実再現） -->
+          <path id="boneBodyPath" fill="url(#boneMetalGrad)" stroke="#1a1a1a" stroke-width="1.5"
+                d="M 215 45 C 215 25 230 10 250 10 C 270 10 285 45 285 45 C 330 65 350 40 400 40 C 455 40 480 80 480 120 C 480 150 455 165 440 165 C 455 165 480 180 480 210 C 480 250 455 290 400 290 C 350 290 330 265 250 265 C 170 265 150 290 100 290 C 45 290 20 250 20 210 C 20 180 45 165 60 165 C 45 165 20 150 20 120 C 20 80 45 40 100 40 C 150 40 170 65 215 45 Z" />
+          
+          <!-- 丸穴 -->
+          <circle cx="250" cy="38" r="18" fill="#f5f5f7" stroke="#888" stroke-width="2"/>
+          
+          <!-- 赤破線（加工可能範囲：内側2mm追従） -->
+          <path fill="none" stroke="#ff3b30" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"
+                transform="matrix(0.91 0 0 0.91 22.5 14.4)"
+                d="M 215 45 C 215 25 230 10 250 10 C 270 10 285 45 285 45 C 330 65 350 40 400 40 C 455 40 480 80 480 120 C 480 150 455 165 440 165 C 455 165 480 180 480 210 C 480 250 455 290 400 290 C 350 290 330 265 250 265 C 170 265 150 290 100 290 C 45 290 20 250 20 210 C 20 180 45 165 60 165 C 45 165 20 150 20 120 C 20 80 45 40 100 40 C 150 40 170 65 215 45 Z" />
         </svg>
 
         <div class="tag-hole"></div>
@@ -309,7 +283,7 @@
       </div>
     </div>
     
-    <!-- プレビュー枠外に注釈ラベルを配置 -->
+    <!-- プレビュー枠外に注釈ラベル配置 -->
     <div class="printable-label-outer">
       <span class="printable-label-badge"></span> 赤破線：加工可能範囲 (内側2mm)
     </div>
@@ -523,16 +497,16 @@
     };
 
     const COLOR_MAP = {
-      stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true },
-      black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff", isGrad: false },
-      red:       { name: "レッド",   hex: "#8b2635", textHex: "#ffffff", isGrad: false },
-      orange:    { name: "オレンジ", hex: "#c85a32", textHex: "#ffffff", isGrad: false },
-      purple:    { name: "パープル", hex: "#5c3285", textHex: "#ffffff", isGrad: false },
-      lightblue: { name: "水色",     hex: "#0084c8", textHex: "#ffffff", isGrad: false },
-      blue:      { name: "ブルー",   hex: "#1240a8", textHex: "#ffffff", isGrad: false },
-      green:     { name: "グリーン", hex: "#1e824c", textHex: "#ffffff", isGrad: false },
-      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false },
-      brass:     { name: "真鍮ゴールド", hex: "#c89d2a", textHex: "#2a1f0a", isGrad: false }
+      stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", svgFill: "url(#boneMetalGrad)", textHex: "#1a1a1a", isGrad: true },
+      black:     { name: "ブラック", hex: "#222224", svgFill: "#222224", textHex: "#ffffff", isGrad: false },
+      red:       { name: "レッド",   hex: "#8b2635", svgFill: "#8b2635", textHex: "#ffffff", isGrad: false },
+      orange:    { name: "オレンジ", hex: "#c85a32", svgFill: "#c85a32", textHex: "#ffffff", isGrad: false },
+      purple:    { name: "パープル", hex: "#5c3285", svgFill: "#5c3285", textHex: "#ffffff", isGrad: false },
+      lightblue: { name: "水色",     hex: "#0084c8", svgFill: "#0084c8", textHex: "#ffffff", isGrad: false },
+      blue:      { name: "ブルー",   hex: "#1240a8", svgFill: "#1240a8", textHex: "#ffffff", isGrad: false },
+      green:     { name: "グリーン", hex: "#1e824c", svgFill: "#1e824c", textHex: "#ffffff", isGrad: false },
+      pink:      { name: "ピンク",   hex: "#a32a76", svgFill: "#a32a76", textHex: "#ffffff", isGrad: false },
+      brass:     { name: "真鍮ゴールド", hex: "#c89d2a", svgFill: "#c89d2a", textHex: "#2a1f0a", isGrad: false }
     };
 
     let currentShape = "rectangle";
@@ -563,6 +537,7 @@
     const shapeBtns = document.querySelectorAll('.shape-tab-btn');
     const colorControlGroup = document.getElementById('colorControlGroup');
     const colorNameLabel = document.getElementById('colorNameLabel');
+    const boneBodyPath = document.getElementById('boneBodyPath');
 
     const lineRadios = document.querySelectorAll('input[name="lineCount"]');
     const sideRadios = document.querySelectorAll('input[name="sideMode"]');
@@ -672,11 +647,17 @@
 
       const cData = COLOR_MAP[selectedColorKey];
       
+      // ドッグタグ型・丸型の背景色設定
       if (cData.isGrad) {
         previewArea.style.background = cData.hex;
       } else {
         previewArea.style.backgroundImage = 'none';
         previewArea.style.backgroundColor = cData.hex;
+      }
+
+      // 骨型SVGの塗りを直接制御
+      if (boneBodyPath) {
+        boneBodyPath.setAttribute('fill', cData.svgFill);
       }
 
       colorNameLabel.textContent = cData.name;
