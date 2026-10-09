@@ -1,4 +1,4 @@
-<!-- 【バージョン: v3.6 - 2026/10/09】骨型完全再現・赤破線追従・セルフチェック済版 -->
+<!-- 【バージョン: v3.7 - 2026/10/09】3次ベジェ曲線による骨型事故完全修復版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -47,10 +47,10 @@
       background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
     }
 
-    /* 2. 骨型（ボーン型）実物写真完全トレースSVGパス */
+    /* 2. 骨型（ボーン型）3次ベジェ曲線完全固定マスク */
     .shape-bone {
       width: 90%;
-      height: 70%;
+      height: 72%;
       border-radius: 0;
       box-shadow: none;
       clip-path: url(#boneClipPath);
@@ -90,7 +90,7 @@
     }
 
     /* 骨型用SVG点線オーバーレイ（骨型選択時のみ表示） */
-    .shape-bone .printable-area { display: none; } /* HTML divは消す */
+    .shape-bone .printable-area { display: none; }
     
     .bone-printable-svg {
       position: absolute;
@@ -132,7 +132,7 @@
       left: 4%; top: 50%; transform: translateY(-50%); width: 6%; aspect-ratio: 1 / 1;
     }
     .shape-bone .tag-hole {
-      left: 50%; top: 18%; transform: translateX(-50%); width: 6.5%; aspect-ratio: 1 / 1;
+      left: 50%; top: 12%; transform: translateX(-50%); width: 6.5%; aspect-ratio: 1 / 1;
     }
     .shape-circle .tag-hole {
       left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1;
@@ -245,20 +245,28 @@
 </head>
 <body>
 
-  <!-- 実物写真完全トレース用 SVGパス定義 -->
-  <!-- 左上丸、左下丸、右上丸、右下丸、上部中央突起を数学的に滑らかに結合したパス -->
+  <!-- 実物写真完全トレース用 3次ベジェ曲線SVG定義 -->
   <svg width="0" height="0" style="position: absolute;">
     <defs>
       <clipPath id="boneClipPath" clipPathUnits="objectBoundingBox">
-        <path d="M 0.28 0.27
-                 A 0.18 0.25 0 1 1 0.05 0.50
-                 A 0.18 0.25 0 1 1 0.28 0.73
-                 L 0.72 0.73
-                 A 0.18 0.25 0 1 1 0.95 0.50
-                 A 0.18 0.25 0 1 1 0.72 0.27
-                 L 0.62 0.27
-                 A 0.10 0.15 0 1 0 0.38 0.27
-                 Z" />
+        <path d="
+          M 0.40 0.18
+          C 0.35 0.18 0.30 0.04 0.16 0.04
+          C 0.04 0.04 0.00 0.18 0.00 0.33
+          C 0.00 0.44 0.10 0.48 0.18 0.50
+          C 0.10 0.52 0.00 0.56 0.00 0.67
+          C 0.00 0.82 0.04 0.96 0.16 0.96
+          C 0.30 0.96 0.35 0.82 0.40 0.82
+          L 0.60 0.82
+          C 0.65 0.82 0.70 0.96 0.84 0.96
+          C 0.96 0.96 1.00 0.82 1.00 0.67
+          C 1.00 0.56 0.90 0.52 0.82 0.50
+          C 0.90 0.48 1.00 0.44 1.00 0.33
+          C 1.00 0.18 0.96 0.04 0.84 0.04
+          C 0.70 0.04 0.65 0.18 0.60 0.18
+          C 0.58 0.18 0.56 0.04 0.50 0.04
+          C 0.44 0.04 0.42 0.18 0.40 0.18
+          Z" />
       </clipPath>
     </defs>
   </svg>
@@ -272,18 +280,26 @@
         
         <!-- 骨型専用の輪郭に沿った内側赤破線 SVG -->
         <svg class="bone-printable-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <!-- 外形パスと同じものをscale(0.92)で内側に縮小 -->
-          <path d="M 28 27
-                   A 18 25 0 1 1 5 50
-                   A 18 25 0 1 1 28 73
-                   L 72 73
-                   A 18 25 0 1 1 95 50
-                   A 18 25 0 1 1 72 27
-                   L 62 27
-                   A 10 15 0 1 0 38 27
-                   Z" 
-                transform="scale(0.90) translate(5, 5)" 
-                fill="none" stroke="#ff3b30" stroke-width="1.2" stroke-dasharray="3,3" vector-effect="non-scaling-stroke" />
+          <path d="
+            M 0.40 0.18
+            C 0.35 0.18 0.30 0.04 0.16 0.04
+            C 0.04 0.04 0.00 0.18 0.00 0.33
+            C 0.00 0.44 0.10 0.48 0.18 0.50
+            C 0.10 0.52 0.00 0.56 0.00 0.67
+            C 0.00 0.82 0.04 0.96 0.16 0.96
+            C 0.30 0.96 0.35 0.82 0.40 0.82
+            L 0.60 0.82
+            C 0.65 0.82 0.70 0.96 0.84 0.96
+            C 0.96 0.96 1.00 0.82 1.00 0.67
+            C 1.00 0.56 0.90 0.52 0.82 0.50
+            C 0.90 0.48 1.00 0.44 1.00 0.33
+            C 1.00 0.18 0.96 0.04 0.84 0.04
+            C 0.70 0.04 0.65 0.18 0.60 0.18
+            C 0.58 0.18 0.56 0.04 0.50 0.04
+            C 0.44 0.04 0.42 0.18 0.40 0.18
+            Z" 
+            transform="matrix(0.88 0 0 0.88 6 6)" 
+            fill="none" stroke="#ff3b30" stroke-width="1.2" stroke-dasharray="3,3" vector-effect="non-scaling-stroke" />
         </svg>
 
         <div class="tag-hole"></div>
@@ -293,7 +309,7 @@
       </div>
     </div>
     
-    <!-- プレビュー枠外に注釈ラベルを移動（切れない・被らない） -->
+    <!-- プレビュー枠外に注釈ラベルを配置 -->
     <div class="printable-label-outer">
       <span class="printable-label-badge"></span> 赤破線：加工可能範囲 (内側2mm)
     </div>
