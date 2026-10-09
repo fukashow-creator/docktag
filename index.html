@@ -1,4 +1,4 @@
-<!-- 【バージョン: v2.2 - 2026/10/06】ミリタリー・ステンシルフォント追加版 -->
+<!-- 【バージョン: v3.0 - 2026/10/09】ドッグタグ・骨型・真鍮丸型 統合シミュレーター -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -23,28 +23,63 @@
 
     .preview-wrapper {
       width: 100%;
-      aspect-ratio: 50 / 28;
+      aspect-ratio: 50 / 32;
       position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
+    /* プレビューコンテナ共通 */
     .preview-container {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    /* 1. ドッグタグ型（長方形） */
+    .shape-rectangle {
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
-      position: relative;
       border-radius: 12% / 50%;
-      overflow: hidden;
       border: 2px solid #aaa;
-      transition: background 0.3s ease;
+      background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
+    }
+
+    /* 2. 骨型（ボーン型） */
+    .shape-bone {
+      width: 90%;
+      height: 90%;
+      clip-path: path('M 50,20 C 20,0 0,30 20,55 C 0,80 20,110 50,90 L 150,90 C 180,110 200,80 180,55 C 200,30 180,0 150,20 Z');
+      /* SVG等での正確なボーン型パス適用 */
+      clip-path: polygon(
+        15% 35%, 12% 15%, 2% 25%, 0% 50%, 2% 75%, 12% 85%, 15% 65%,
+        85% 65%, 88% 85%, 98% 75%, 100% 50%, 98% 25%, 88% 15%, 85% 35%
+      );
+      border-radius: 15px;
+      background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
+    }
+
+    /* 3. 真鍮丸型 */
+    .shape-circle {
+      width: 78%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      border: 2px solid #b89230;
+      background: radial-gradient(circle at 35% 35%, #fceabb 0%, #f8b500 50%, #c88900 100%);
     }
 
     .printable-area {
       position: absolute;
-      left: 4%; right: 4%; top: 7.1%; bottom: 7.1%;
+      left: 5%; right: 5%; top: 8%; bottom: 8%;
       border: 1.5px dashed #ff3b30;
-      border-radius: 8% / 40%;
       pointer-events: none;
       z-index: 3;
+      border-radius: 8px;
+    }
+    .shape-circle .printable-area {
+      border-radius: 50%;
     }
     .printable-label {
       position: absolute;
@@ -53,13 +88,20 @@
       background: rgba(255,255,255,0.85); padding: 1px 4px; border-radius: 3px;
     }
 
+    /* 穴の位置 */
     .tag-hole {
       position: absolute;
-      left: 4%; top: 50%;
-      transform: translateY(-50%);
-      width: 6%; aspect-ratio: 1 / 1;
       border-radius: 50%; background-color: #f5f5f7;
       border: 1.5px solid #a0a0a0; z-index: 4;
+    }
+    .shape-rectangle .tag-hole {
+      left: 4%; top: 50%; transform: translateY(-50%); width: 6%; aspect-ratio: 1 / 1;
+    }
+    .shape-bone .tag-hole {
+      left: 50%; top: 8%; transform: translateX(-50%); width: 7%; aspect-ratio: 1 / 1;
+    }
+    .shape-circle .tag-hole {
+      left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1;
     }
 
     .preview-container .engraved-line {
@@ -72,6 +114,19 @@
       z-index: 2;
       line-height: 1;
       text-shadow: 0 0 2px rgba(255,255,255,0.3);
+    }
+
+    /* 形状選択タブ */
+    .shape-selector-group {
+      display: flex; gap: 8px; margin-bottom: 12px;
+    }
+    .shape-tab-btn {
+      flex: 1; padding: 10px 5px; font-size: 0.85rem; font-weight: bold; border: 2px solid #333;
+      background: #fff; color: #333; border-radius: 8px; cursor: pointer; text-align: center;
+      transition: all 0.2s ease;
+    }
+    .shape-tab-btn.active {
+      background: #333; color: #fff;
     }
 
     /* 表面/裏面 切替タブ */
@@ -145,8 +200,8 @@
     }
     .modal-title { font-size: 1.1rem; font-weight: bold; text-align: center; margin-bottom: 15px; }
     .modal-img-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-    .modal-img-wrapper { width: 100%; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; position: relative; }
-    .modal-img-wrapper img { width: 100%; display: block; }
+    .modal-img-wrapper { width: 100%; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; position: relative; display: flex; justify-content: center; background: #f5f5f7; }
+    .modal-img-wrapper img { max-width: 100%; display: block; }
     .modal-img-tag { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 3px; }
     .modal-info { font-size: 0.85rem; background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 15px; line-height: 1.5; }
     .modal-btns { display: flex; gap: 10px; }
@@ -158,8 +213,8 @@
 
   <div class="sticky-preview">
     <div class="preview-wrapper">
-      <div class="preview-container" id="previewArea">
-        <div class="printable-area"><span class="printable-label">加工可能範囲(内側2mm)</span></div>
+      <div class="preview-container shape-rectangle" id="previewArea">
+        <div class="printable-area"><span class="printable-label">加工可能範囲</span></div>
         <div class="tag-hole"></div>
         <div class="engraved-line" id="linePrev1">1行目の文字</div>
         <div class="engraved-line hidden" id="linePrev2">2行目の文字</div>
@@ -176,10 +231,18 @@
     </div>
 
     <div class="control-panel">
-      <div class="panel-title">1. デザイン調整</div>
+      <!-- 形状選択 -->
+      <div class="panel-title">1. タグの形状を選択</div>
+      <div class="shape-selector-group">
+        <div class="shape-tab-btn active" data-shape="rectangle">ドッグタグ型</div>
+        <div class="shape-tab-btn" data-shape="bone">骨型（ボーン）</div>
+        <div class="shape-tab-btn" data-shape="circle">丸型（真鍮）</div>
+      </div>
+
+      <div class="panel-title" style="margin-top: 15px;">2. デザイン調整</div>
       
       <!-- カラー選択 -->
-      <div class="input-group">
+      <div class="input-group" id="colorControlGroup">
         <label>本体カラー: <span id="colorNameLabel" style="color:#007aff; font-weight:bold;">ステンレスシルバー</span></label>
         <div class="color-palette" id="colorPalette"></div>
       </div>
@@ -235,7 +298,7 @@
         </div>
         <div class="input-group">
           <label>左右位置</label>
-          <div class="range-group"><input type="range" id="posXInput1" min="20" max="80" value="55"><span id="posXVal1">0</span></div>
+          <div class="range-group"><input type="range" id="posXInput1" min="20" max="80" value="50"><span id="posXVal1">0</span></div>
         </div>
         <div class="input-group">
           <label>上下位置</label>
@@ -276,7 +339,7 @@
         </div>
         <div class="input-group">
           <label>左右位置</label>
-          <div class="range-group"><input type="range" id="posXInput2" min="20" max="80" value="55"><span id="posXVal2">0</span></div>
+          <div class="range-group"><input type="range" id="posXInput2" min="20" max="80" value="50"><span id="posXVal2">0</span></div>
         </div>
         <div class="input-group">
           <label>上下位置</label>
@@ -317,7 +380,7 @@
         </div>
         <div class="input-group">
           <label>左右位置</label>
-          <div class="range-group"><input type="range" id="posXInput3" min="20" max="80" value="55"><span id="posXVal3">0</span></div>
+          <div class="range-group"><input type="range" id="posXInput3" min="20" max="80" value="50"><span id="posXVal3">0</span></div>
         </div>
         <div class="input-group">
           <label>上下位置</label>
@@ -329,7 +392,7 @@
 
     <!-- お届け先フォーム -->
     <div class="form-panel">
-      <div class="panel-title">2. お届け先情報の入力</div>
+      <div class="panel-title">3. お届け先情報の入力</div>
       <div class="input-group"><label>お名前 *</label><input type="text" id="custName" required placeholder="山田 太郎"></div>
       <div class="input-group"><label>電話番号 *</label><input type="text" id="custPhone" required placeholder="090-0000-0000"></div>
       <div class="input-group">
@@ -361,6 +424,12 @@
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxkwSlExzjPR_fLO-4aM7eWB7YTkrEZHYmGw_u68vnvKPxchfLjQBPmT_178UOxY_s/exec";
 
+    const SHAPE_MAP = {
+      rectangle: "ドッグタグ型",
+      bone: "骨型（ボーン）",
+      circle: "丸型（真鍮）"
+    };
+
     const COLOR_MAP = {
       stainless: { name: "ステンレスシルバー", hex: "linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%)", textHex: "#1a1a1a", isGrad: true },
       black:     { name: "ブラック", hex: "#222224", textHex: "#ffffff", isGrad: false },
@@ -370,9 +439,11 @@
       lightblue: { name: "水色",     hex: "#0084c8", textHex: "#ffffff", isGrad: false },
       blue:      { name: "ブルー",   hex: "#1240a8", textHex: "#ffffff", isGrad: false },
       green:     { name: "グリーン", hex: "#1e824c", textHex: "#ffffff", isGrad: false },
-      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false }
+      pink:      { name: "ピンク",   hex: "#a32a76", textHex: "#ffffff", isGrad: false },
+      brass:     { name: "真鍮ゴールド", hex: "radial-gradient(circle at 35% 35%, #fceabb 0%, #f8b500 50%, #c88900 100%)", textHex: "#2a1f0a", isGrad: true }
     };
 
+    let currentShape = "rectangle";
     let selectedColorKey = "stainless";
     let currentSide = "front";
     let isDoubleSided = false;
@@ -381,28 +452,31 @@
       front: {
         lineCount: 1,
         lines: [
-          { text: "YOUR TEXT", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
-          { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
-          { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
+          { text: "YOUR TEXT", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 50, posY: 50 },
+          { text: "SECOND LINE", font: "'Great Vibes', cursive", size: 35, scaleY: 100, spacing: 0, posX: 50, posY: 65 },
+          { text: "THIRD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 50, posY: 80 }
         ]
       },
       back: {
         lineCount: 1,
         lines: [
-          { text: "BACK SIDE", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 55, posY: 50 },
-          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, scaleY: 100, spacing: 0, posX: 55, posY: 65 },
-          { text: "3RD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 55, posY: 80 }
+          { text: "BACK SIDE", font: "'Black Ops One', cursive", size: 40, scaleY: 100, spacing: 0, posX: 50, posY: 50 },
+          { text: "TEL: 090-XXXX", font: "'Noto Sans JP', sans-serif", size: 35, scaleY: 100, spacing: 0, posX: 50, posY: 65 },
+          { text: "3RD LINE", font: "'Cinzel', serif", size: 30, scaleY: 100, spacing: 0, posX: 50, posY: 80 }
         ]
       }
     };
+
+    const previewArea = document.getElementById('previewArea');
+    const shapeBtns = document.querySelectorAll('.shape-tab-btn');
+    const colorControlGroup = document.getElementById('colorControlGroup');
+    const colorNameLabel = document.getElementById('colorNameLabel');
 
     const lineRadios = document.querySelectorAll('input[name="lineCount"]');
     const sideRadios = document.querySelectorAll('input[name="sideMode"]');
     const sideTabContainer = document.getElementById('sideTabContainer');
     const tabFrontBtn = document.getElementById('tabFrontBtn');
     const tabBackBtn = document.getElementById('tabBackBtn');
-    const previewArea = document.getElementById('previewArea');
-    const colorNameLabel = document.getElementById('colorNameLabel');
 
     const lines = [
       {
@@ -455,11 +529,36 @@
       }
     ];
 
+    // 形状切り替え
+    shapeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        shapeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        currentShape = btn.getAttribute('data-shape');
+        
+        previewArea.className = 'preview-container shape-' + currentShape;
+
+        if (currentShape === 'circle') {
+          colorControlGroup.classList.add('hidden');
+          setColor('brass');
+        } else {
+          colorControlGroup.classList.remove('hidden');
+          if (selectedColorKey === 'brass') {
+            setColor('stainless');
+          } else {
+            setColor(selectedColorKey);
+          }
+        }
+      });
+    });
+
     function initColorPalette() {
       const paletteContainer = document.getElementById('colorPalette');
       paletteContainer.innerHTML = '';
 
       Object.keys(COLOR_MAP).forEach(key => {
+        if (key === 'brass') return; // 真鍮は丸型専用
         const item = COLOR_MAP[key];
         const btn = document.createElement('div');
         btn.className = `color-item ${key === selectedColorKey ? 'selected' : ''}`;
@@ -494,15 +593,15 @@
       lines.forEach(line => {
         line.prev.style.color = cData.textHex;
         if (cData.textHex === "#ffffff") {
-          line.prev.style.textShadow = "0 0 2px rgba(0,0,0,0.5)";
+          line.prev.style.textShadow = "0 0 2px rgba(0,0,0,0.6)";
         } else {
-          line.prev.style.textShadow = "0 0 2px rgba(255,255,255,0.5)";
+          line.prev.style.textShadow = "0 0 2px rgba(255,255,255,0.4)";
         }
       });
 
       document.querySelectorAll('.color-item').forEach((el, idx) => {
-        const key = Object.keys(COLOR_MAP)[idx];
-        if (key === selectedColorKey) {
+        const keys = Object.keys(COLOR_MAP).filter(k => k !== 'brass');
+        if (keys[idx] === selectedColorKey) {
           el.classList.add('selected');
         } else {
           el.classList.remove('selected');
@@ -513,8 +612,21 @@
     function applyColorFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
       const colorParam = urlParams.get('color');
+      const shapeParam = urlParams.get('shape');
+
+      if (shapeParam && SHAPE_MAP[shapeParam.toLowerCase()]) {
+        const targetShape = shapeParam.toLowerCase();
+        const targetBtn = document.querySelector(`.shape-tab-btn[data-shape="${targetShape}"]`);
+        if (targetBtn) targetBtn.click();
+      }
+
       if (colorParam && COLOR_MAP[colorParam.toLowerCase()]) {
-        setColor(colorParam.toLowerCase());
+        if (colorParam.toLowerCase() === 'brass') {
+          const circleBtn = document.querySelector(`.shape-tab-btn[data-shape="circle"]`);
+          if (circleBtn) circleBtn.click();
+        } else {
+          setColor(colorParam.toLowerCase());
+        }
       } else {
         setColor("stainless");
       }
@@ -581,7 +693,7 @@
           line.sizeVal.textContent = line.size.value;
           line.scaleYVal.textContent = line.scaleY.value + '%';
           line.spacingVal.textContent = line.spacing.value + 'px';
-          line.posXVal.textContent = line.posX.value - 55;
+          line.posXVal.textContent = line.posX.value - 50;
           line.posYVal.textContent = line.posY.value - 50;
         } else {
           line.block.classList.add('hidden');
@@ -681,6 +793,7 @@
         scale: 2,
         useCORS: true,
         logging: false,
+        backgroundColor: null,
         width: previewArea.offsetWidth,
         height: previewArea.offsetHeight,
         onclone: (clonedDoc) => {
@@ -711,88 +824,4 @@
 
       capturedFrontImage = await generateCanvasImageForSide('front');
       if (isDoubleSided) {
-        capturedBackImage = await generateCanvasImageForSide('back');
-      } else {
-        capturedBackImage = "";
-      }
-
-      const imgGrid = document.getElementById('modalImgGrid');
-      imgGrid.innerHTML = `
-        <div class="modal-img-wrapper">
-          <span class="modal-img-tag">${isDoubleSided ? '表面' : '完成デザイン'}</span>
-          <img src="${capturedFrontImage}" alt="表面デザイン">
-        </div>
-      `;
-
-      if (isDoubleSided && capturedBackImage) {
-        imgGrid.innerHTML += `
-          <div class="modal-img-wrapper">
-            <span class="modal-img-tag">裏面</span>
-            <img src="${capturedBackImage}" alt="裏面デザイン">
-          </div>
-        `;
-      }
-
-      document.getElementById('modalInfoText').innerHTML = `
-        <strong>本体カラー:</strong> ${COLOR_MAP[selectedColorKey].name}<br>
-        <strong>刻印種類:</strong> ${isDoubleSided ? '両面刻印' : '片面刻印'}<br>
-        <strong>お名前:</strong> ${name}<br>
-        <strong>電話番号:</strong> ${phone}<br>
-        <strong>ご住所:</strong> 〒${zip} ${address}
-      `;
-
-      document.getElementById('confirmModal').classList.remove('hidden');
-    });
-
-    document.getElementById('closeModalBtn').addEventListener('click', () => {
-      document.getElementById('confirmModal').classList.add('hidden');
-    });
-
-    document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
-      const finalBtn = document.getElementById('finalSubmitBtn');
-      finalBtn.disabled = true;
-      finalBtn.textContent = '送信中...';
-
-      saveCurrentControlsToData();
-
-      const orderData = {
-        name: document.getElementById('custName').value,
-        phone: document.getElementById('custPhone').value,
-        zip: document.getElementById('custZip').value,
-        address: document.getElementById('custAddress').value,
-        colorKey: selectedColorKey,
-        colorName: COLOR_MAP[selectedColorKey].name,
-        isDoubleSided: isDoubleSided,
-        imageDataFront: capturedFrontImage,
-        imageDataBack: capturedBackImage,
-        frontData: sideData.front,
-        backData: isDoubleSided ? sideData.back : null
-      };
-
-      try {
-        const response = await fetch(GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(orderData)
-        });
-
-        const resData = await response.json();
-
-        if (resData.result === "success") {
-          alert(`ご注文ありがとうございました！\n\n【ご注文番号】\n${resData.orderId}\n\n問い合わせの際はこちらの注文番号をお伝えください。`);
-          location.reload();
-        } else {
-          throw new Error("送信エラー");
-        }
-      } catch (error) {
-        alert('ご注文を送信しました！スプレッドシートをご確認ください。');
-        location.reload();
-      }
-    });
-
-    initColorPalette();
-    applyColorFromUrl();
-    loadDataToControls();
-  </script>
-</body>
-</html>
+        capturedBackImage = await
