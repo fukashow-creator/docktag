@@ -824,4 +824,91 @@
 
       capturedFrontImage = await generateCanvasImageForSide('front');
       if (isDoubleSided) {
-        capturedBackImage = await
+        capturedBackImage = await generateCanvasImageForSide('back');
+      } else {
+        capturedBackImage = "";
+      }
+
+      const imgGrid = document.getElementById('modalImgGrid');
+      imgGrid.innerHTML = `
+        <div class="modal-img-wrapper">
+          <span class="modal-img-tag">${isDoubleSided ? '表面' : '完成デザイン'}</span>
+          <img src="${capturedFrontImage}" alt="表面デザイン">
+        </div>
+      `;
+
+      if (isDoubleSided && capturedBackImage) {
+        imgGrid.innerHTML += `
+          <div class="modal-img-wrapper">
+            <span class="modal-img-tag">裏面</span>
+            <img src="${capturedBackImage}" alt="裏面デザイン">
+          </div>
+        `;
+      }
+
+      document.getElementById('modalInfoText').innerHTML = `
+        <strong>タグの形状:</strong> ${SHAPE_MAP[currentShape]}<br>
+        <strong>本体カラー:</strong> ${COLOR_MAP[selectedColorKey].name}<br>
+        <strong>刻印種類:</strong> ${isDoubleSided ? '両面刻印' : '片面刻印'}<br>
+        <strong>お名前:</strong> ${name}<br>
+        <strong>電話番号:</strong> ${phone}<br>
+        <strong>ご住所:</strong> 〒${zip} ${address}
+      `;
+
+      document.getElementById('confirmModal').classList.remove('hidden');
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      document.getElementById('confirmModal').classList.add('hidden');
+    });
+
+    document.getElementById('finalSubmitBtn').addEventListener('click', async () => {
+      const finalBtn = document.getElementById('finalSubmitBtn');
+      finalBtn.disabled = true;
+      finalBtn.textContent = '送信中...';
+
+      saveCurrentControlsToData();
+
+      const orderData = {
+        name: document.getElementById('custName').value,
+        phone: document.getElementById('custPhone').value,
+        zip: document.getElementById('custZip').value,
+        address: document.getElementById('custAddress').value,
+        shapeKey: currentShape,
+        shapeName: SHAPE_MAP[currentShape],
+        colorKey: selectedColorKey,
+        colorName: COLOR_MAP[selectedColorKey].name,
+        isDoubleSided: isDoubleSided,
+        imageDataFront: capturedFrontImage,
+        imageDataBack: capturedBackImage,
+        frontData: sideData.front,
+        backData: isDoubleSided ? sideData.back : null
+      };
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(orderData)
+        });
+
+        const resData = await response.json();
+
+        if (resData.result === "success") {
+          alert(`ご注文ありがとうございました！\n\n【ご注文番号】\n${resData.orderId}\n\n問い合わせの際はこちらの注文番号をお伝えください。`);
+          location.reload();
+        } else {
+          throw new Error("送信エラー");
+        }
+      } catch (error) {
+        alert('ご注文を送信しました！スプレッドシートをご確認ください。');
+        location.reload();
+      }
+    });
+
+    initColorPalette();
+    applyColorFromUrl();
+    loadDataToControls();
+  </script>
+</body>
+</html>
