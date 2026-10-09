@@ -1,4 +1,4 @@
-<!-- 【バージョン: v3.0 - 2026/10/09】ドッグタグ・骨型・真鍮丸型 統合シミュレーター -->
+<!-- 【バージョン: v3.1 - 2026/10/09】加工可能範囲（赤破線）の縁取り曲線・位置修復版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -51,8 +51,6 @@
     .shape-bone {
       width: 90%;
       height: 90%;
-      clip-path: path('M 50,20 C 20,0 0,30 20,55 C 0,80 20,110 50,90 L 150,90 C 180,110 200,80 180,55 C 200,30 180,0 150,20 Z');
-      /* SVG等での正確なボーン型パス適用 */
       clip-path: polygon(
         15% 35%, 12% 15%, 2% 25%, 0% 50%, 2% 75%, 12% 85%, 15% 65%,
         85% 65%, 88% 85%, 98% 75%, 100% 50%, 98% 25%, 88% 15%, 85% 35%
@@ -70,17 +68,32 @@
       background: radial-gradient(circle at 35% 35%, #fceabb 0%, #f8b500 50%, #c88900 100%);
     }
 
+    /* 加工可能範囲（赤破線の修復処理） */
     .printable-area {
       position: absolute;
-      left: 5%; right: 5%; top: 8%; bottom: 8%;
       border: 1.5px dashed #ff3b30;
       pointer-events: none;
       z-index: 3;
+    }
+
+    /* ドッグタグ型：本体の12% / 50%カーブにピッタリ合わせた角丸 */
+    .shape-rectangle .printable-area {
+      left: 4%; right: 4%; top: 7.1%; bottom: 7.1%;
+      border-radius: 8% / 40%;
+    }
+
+    /* 骨型：中央エリアの内側 */
+    .shape-bone .printable-area {
+      left: 16%; right: 16%; top: 20%; bottom: 20%;
       border-radius: 8px;
     }
+
+    /* 丸型：正円の内側 */
     .shape-circle .printable-area {
+      left: 6%; right: 6%; top: 6%; bottom: 6%;
       border-radius: 50%;
     }
+
     .printable-label {
       position: absolute;
       right: 8px; bottom: 4px;
@@ -529,7 +542,6 @@
       }
     ];
 
-    // 形状切り替え
     shapeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         shapeBtns.forEach(b => b.classList.remove('active'));
@@ -558,7 +570,7 @@
       paletteContainer.innerHTML = '';
 
       Object.keys(COLOR_MAP).forEach(key => {
-        if (key === 'brass') return; // 真鍮は丸型専用
+        if (key === 'brass') return;
         const item = COLOR_MAP[key];
         const btn = document.createElement('div');
         btn.className = `color-item ${key === selectedColorKey ? 'selected' : ''}`;
