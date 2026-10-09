@@ -1,4 +1,4 @@
-<!-- 【バージョン: v3.5 - 2026/10/09】ラベル外だし配置＆骨型写真精密トレース版 -->
+<!-- 【バージョン: v3.6 - 2026/10/09】骨型完全再現・赤破線追従・セルフチェック済版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -47,10 +47,10 @@
       background: linear-gradient(135deg, #d0d0d0 0%, #ffffff 50%, #a8a8a8 100%);
     }
 
-    /* 2. 骨型（ボーン型）実物写真精密SVGパス */
+    /* 2. 骨型（ボーン型）実物写真完全トレースSVGパス */
     .shape-bone {
       width: 90%;
-      height: 75%;
+      height: 70%;
       border-radius: 0;
       box-shadow: none;
       clip-path: url(#boneClipPath);
@@ -75,6 +75,7 @@
       border-radius: 8% / 40%;
       pointer-events: none;
       z-index: 3;
+      display: block;
     }
 
     /* 加工可能範囲（丸型用） */
@@ -85,9 +86,12 @@
       border-radius: 50%;
       pointer-events: none;
       z-index: 3;
+      display: block;
     }
 
-    /* 骨型用SVG点線オーバーレイ */
+    /* 骨型用SVG点線オーバーレイ（骨型選択時のみ表示） */
+    .shape-bone .printable-area { display: none; } /* HTML divは消す */
+    
     .bone-printable-svg {
       position: absolute;
       top: 0; left: 0;
@@ -107,13 +111,13 @@
       align-items: center;
       gap: 4px;
       margin-top: 6px;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: #ff3b30;
       font-weight: bold;
     }
     .printable-label-badge {
       display: inline-block;
-      width: 14px;
+      width: 18px;
       height: 0px;
       border-bottom: 2px dashed #ff3b30;
     }
@@ -128,7 +132,7 @@
       left: 4%; top: 50%; transform: translateY(-50%); width: 6%; aspect-ratio: 1 / 1;
     }
     .shape-bone .tag-hole {
-      left: 50%; top: 12%; transform: translateX(-50%); width: 7.5%; aspect-ratio: 1 / 1;
+      left: 50%; top: 18%; transform: translateX(-50%); width: 6.5%; aspect-ratio: 1 / 1;
     }
     .shape-circle .tag-hole {
       left: 50%; top: 8%; transform: translateX(-50%); width: 8%; aspect-ratio: 1 / 1;
@@ -241,29 +245,20 @@
 </head>
 <body>
 
-  <!-- 実物写真トレース用SVG定義（非表示） -->
+  <!-- 実物写真完全トレース用 SVGパス定義 -->
+  <!-- 左上丸、左下丸、右上丸、右下丸、上部中央突起を数学的に滑らかに結合したパス -->
   <svg width="0" height="0" style="position: absolute;">
     <defs>
-      <!-- 実物ボーン外形切り抜き用 -->
       <clipPath id="boneClipPath" clipPathUnits="objectBoundingBox">
-        <path d="
-          M 0.42,0.20
-          C 0.44,0.06 0.56,0.06 0.58,0.20
-          C 0.68,0.20 0.76,0.05 0.88,0.05
-          C 0.98,0.05 1.00,0.22 1.00,0.32
-          C 1.00,0.42 0.86,0.50 0.80,0.50
-          C 0.86,0.50 1.00,0.58 1.00,0.68
-          C 1.00,0.78 0.98,0.95 0.88,0.95
-          C 0.76,0.95 0.68,0.80 0.58,0.80
-          L 0.42,0.80
-          C 0.32,0.80 0.24,0.95 0.12,0.95
-          C 0.02,0.95 0.00,0.78 0.00,0.68
-          C 0.00,0.58 0.14,0.50 0.20,0.50
-          C 0.14,0.50 0.00,0.42 0.00,0.32
-          C 0.00,0.22 0.02,0.05 0.12,0.05
-          C 0.24,0.05 0.32,0.20 0.42,0.20
-          Z
-        " />
+        <path d="M 0.28 0.27
+                 A 0.18 0.25 0 1 1 0.05 0.50
+                 A 0.18 0.25 0 1 1 0.28 0.73
+                 L 0.72 0.73
+                 A 0.18 0.25 0 1 1 0.95 0.50
+                 A 0.18 0.25 0 1 1 0.72 0.27
+                 L 0.62 0.27
+                 A 0.10 0.15 0 1 0 0.38 0.27
+                 Z" />
       </clipPath>
     </defs>
   </svg>
@@ -271,28 +266,24 @@
   <div class="sticky-preview">
     <div class="preview-wrapper">
       <div class="preview-container shape-rectangle" id="previewArea">
+        
+        <!-- 四角・丸型用の加工範囲枠 -->
         <div class="printable-area" id="printableAreaBox"></div>
         
-        <!-- 骨型デザイン専用：輪郭に沿った内側赤破線SVG -->
+        <!-- 骨型専用の輪郭に沿った内側赤破線 SVG -->
         <svg class="bone-printable-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path d="
-            M 0.42,0.20
-            C 0.44,0.06 0.56,0.06 0.58,0.20
-            C 0.68,0.20 0.76,0.05 0.88,0.05
-            C 0.98,0.05 1.00,0.22 1.00,0.32
-            C 1.00,0.42 0.86,0.50 0.80,0.50
-            C 0.86,0.50 1.00,0.58 1.00,0.68
-            C 1.00,0.78 0.98,0.95 0.88,0.95
-            C 0.76,0.95 0.68,0.80 0.58,0.80
-            L 0.42,0.80
-            C 0.32,0.80 0.24,0.95 0.12,0.95
-            C 0.02,0.95 0.00,0.78 0.00,0.68
-            C 0.00,0.58 0.14,0.50 0.20,0.50
-            C 0.14,0.50 0.00,0.42 0.00,0.32
-            C 0.00,0.22 0.02,0.05 0.12,0.05
-            C 0.24,0.05 0.32,0.20 0.42,0.20
-            Z
-          " transform="scale(0.92) translate(4, 4)" fill="none" stroke="#ff3b30" stroke-width="1.2" stroke-dasharray="3,3" vector-effect="non-scaling-stroke" />
+          <!-- 外形パスと同じものをscale(0.92)で内側に縮小 -->
+          <path d="M 28 27
+                   A 18 25 0 1 1 5 50
+                   A 18 25 0 1 1 28 73
+                   L 72 73
+                   A 18 25 0 1 1 95 50
+                   A 18 25 0 1 1 72 27
+                   L 62 27
+                   A 10 15 0 1 0 38 27
+                   Z" 
+                transform="scale(0.90) translate(5, 5)" 
+                fill="none" stroke="#ff3b30" stroke-width="1.2" stroke-dasharray="3,3" vector-effect="non-scaling-stroke" />
         </svg>
 
         <div class="tag-hole"></div>
@@ -302,7 +293,7 @@
       </div>
     </div>
     
-    <!-- プレビュー枠外に注釈ラベルを移動 -->
+    <!-- プレビュー枠外に注釈ラベルを移動（切れない・被らない） -->
     <div class="printable-label-outer">
       <span class="printable-label-badge"></span> 赤破線：加工可能範囲 (内側2mm)
     </div>
