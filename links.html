@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公式リンクまとめ</title>
+  <style>
+    /* 全体の背景やフォント設定 */
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 0;
+    }
+    /* スマホサイズの中央寄せコンテナ */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      min-height: 100vh;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      padding-bottom: 40px;
+    }
+    /* 上部の看板（バナー）画像 */
+    .banner {
+      width: 100%;
+      height: auto;
+      display: block;
+      /* バナー画像の高さを固定したい場合は height: 200px; object-fit: cover; などを追加 */
+    }
+    /* プロフィールテキスト */
+    .profile {
+      text-align: center;
+      padding: 20px 20px 10px;
+    }
+    .profile h1 {
+      font-size: 1.2rem;
+      color: #333;
+      margin: 0 0 10px 0;
+    }
+    .profile p {
+      font-size: 0.9rem;
+      color: #666;
+      margin: 0;
+    }
+    /* リンクボタンのコンテナ */
+    .links-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+    }
+    /* ボタンの基本スタイル */
+    .link-button {
+      display: block;
+      text-align: center;
+      padding: 16px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      color: #ffffff;
+      transition: opacity 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .link-button:hover {
+      opacity: 0.8;
+    }
+    /* サービスごとのブランドカラー */
+    .btn-line { background-color: #06C755; }
+    .btn-insta { background-color: #E1306C; }
+    .btn-order { background-color: #333333; } /* GitHub注文ページ用 */
+    .btn-contact { background-color: #555555; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- 1. 上部の看板画像（ここに設定したい画像を読み込ませます） -->
+    <img src="banner.jpg" alt="トップバナー" class="banner">
+
+    <!-- 2. タイトルや説明文 -->
+    <div class="profile">
+      <h1>あなたのお店の名前</h1>
+      <p>最新情報やご注文はこちらから</p>
+    </div>
+
+    <!-- 3. 各種リンクボタン -->
+    <div class="links-container">
+      <!-- 公式LINE -->
+      <a href="https://lin.ee/あなたのID" class="link-button btn-line" target="_blank">公式LINE 友だち追加</a>
+      
+      <!-- Instagram -->
+      <a href="https://instagram.com/あなたのID" class="link-button btn-insta" target="_blank">Instagramを見る</a>
+      
+      <!-- GitHubの注文ページ（同じサイト内なら相対パスでも可） -->
+      <a href="https://あなたのユーザー名.github.io/注文ページ/" class="link-button btn-order">📦 注文受付ページはこちら</a>
+      
+      <!-- お問い合わせ -->
+      <a href="お問い合わせフォームのURL" class="link-button btn-contact">✉️ お問い合わせ</a>
+    </div>
+  </div>
+
+</body>
+</html>
